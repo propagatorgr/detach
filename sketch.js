@@ -1,6 +1,6 @@
 let g = 10;
 
-let state = "loading"; 
+let state = "loading";
 
 let y1, v1;
 let y2;
@@ -12,6 +12,8 @@ let dt = 0.02;
 
 let L0 = 200;
 
+// --------------------------------
+
 function setup() {
   createCanvas(window.innerWidth - 260, window.innerHeight);
   initSystem();
@@ -22,6 +24,8 @@ function windowResized(){
   initSystem();
 }
 
+// --------------------------------
+
 function initSystem(){
 
   let m1 = +m1El.value;
@@ -30,7 +34,7 @@ function initSystem(){
   let groundY = height - 100;
   y2 = groundY;
 
-  // ΙΣΟΡΡΟΠΙΑ ΜΟΝΟ m1 !!
+  // ✅ ΙΣΟΡΡΟΠΙΑ ΜΟΝΟ m1
   let deltaL = (m1*g)/k;
   let L_eq = L0 + deltaL;
 
@@ -42,14 +46,19 @@ function initSystem(){
   state = "loading";
 }
 
+// --------------------------------
+
 function startSim(){
   state = "oscillation";
   v1 = 0;
 }
 
 function resetSim(){
+  FEl.value = 0;   // ✅ reset δύναμης
   initSystem();
 }
+
+// --------------------------------
 
 function draw(){
 
@@ -67,8 +76,10 @@ function draw(){
 
   // -------- LOADING --------
   if(state==="loading"){
-    let speed = 4;
-    if (abs(y_target - y1) > 1){
+
+    let speed = 5;
+
+    if (Math.abs(y_target - y1) > speed){
       y1 += speed * Math.sign(y_target - y1);
     } else {
       y1 = y_target;
@@ -91,7 +102,7 @@ function draw(){
 
   let lift = (Fel >= m2*g);
 
-  drawScene(y1,y2,lift, y_eq);
+  drawScene(y1,y2,lift,y_eq);
 
   if(forcesEl.checked){
     drawForces(y1,y2,F,state,lift);
@@ -108,7 +119,7 @@ function drawScene(y1,y2,lift,y_eq){
   stroke(0);
   line(0,groundY+30,width,groundY+30);
 
-  // ισορροπία
+  // γραμμή ισορροπίας
   stroke(0,150,0);
   line(cx-40,y_eq,cx+40,y_eq);
 
