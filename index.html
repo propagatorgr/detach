@@ -1,112 +1,92 @@
 <!DOCTYPE html>
 <html lang="el">
 <head>
-  <meta charset="UTF-8">
-  <title>Ελατήριο - Ταλάντωση</title>
+<meta charset="UTF-8">
+<title>Ελατήριο - Ταλάντωση</title>
 
-  <!-- p5.js -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.0/p5.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.0/p5.min.js"></script>
 
-  <style>
-    body {
-      margin: 0;
-      display: flex;
-      height: 100vh;
-      font-family: sans-serif;
-    }
+<style>
+body {
+  margin: 0;
+  display: flex;
+  height: 100vh;
+  font-family: sans-serif;
+}
 
-    #controls {
-      width: 260px;
-      background: #e9e9e9;
-      padding: 15px;
-      box-sizing: border-box;
-    }
+#controls {
+  width: 260px;
+  background: #e9e9e9;
+  padding: 15px;
+  box-sizing: border-box;
+}
 
-    canvas {
-      flex: 1;
-    }
+canvas {
+  flex: 1;
+}
 
-    label {
-      display: block;
-      margin-top: 10px;
-    }
+label {
+  display: block;
+  margin-top: 10px;
+}
 
-    .value {
-      font-weight: bold;
-      margin-left: 5px;
-    }
+.value {
+  font-weight: bold;
+}
 
-    button {
-      margin-top: 10px;
-      width: 100%;
-      padding: 8px;
-      cursor: pointer;
-    }
+button {
+  margin-top: 10px;
+  width: 100%;
+  padding: 8px;
+}
+</style>
 
-  </style>
 </head>
 
 <body>
 
 <div id="controls">
 
-  <h3>Ρυθμίσεις</h3>
+<h3>Ρυθμίσεις</h3>
 
-  <!-- ΜΑΖΕΣ -->
+<label>Μάζα Σ1: <span id="m1v" class="value"></span></label>
+<input id="m1" type="range" min="2" max="10" value="4">
 
-  <label>
-    Μάζα Σ1: <span id="m1v" class="value"></span>
-  </label>
-  <input id="m1" type="range" min="2" max="10" value="4">
+<label>Μάζα Σ2: <span id="m2v" class="value"></span></label>
+<input id="m2" type="range" min="2" max="10" value="6">
 
-  <label>
-    Μάζα Σ2: <span id="m2v" class="value"></span>
-  </label>
-  <input id="m2" type="range" min="2" max="10" value="6">
+<label>k: <span id="kv" class="value"></span></label>
+<input id="k" type="range" min="20" max="200" value="80">
 
-  <!-- k -->
+<label>F: <span id="Fv" class="value"></span></label>
+<input id="F" type="range" min="0" max="50" value="0">
 
-  <label>
-    k: <span id="kv" class="value"></span>
-  </label>
-  <input id="k" type="range" min="20" max="200" value="80">
+<button onclick="startSim()">Έναρξη ταλάντωσης</button>
+<button onclick="resetSim()">Επαναφορά</button>
+<button onclick="togglePause()">Pause / Resume</button>
 
-  <!-- F -->
+<label>
+<input id="forces" type="checkbox" checked>
+Εμφάνιση δυνάμεων
+</label>
 
-  <label>
-    F: <span id="Fv" class="value"></span>
-  </label>
-  <input id="F" type="range" min="0" max="80" value="0">
+<!-- Legend -->
+<div style="margin-top:10px; font-size:14px;">
+<div style="color:blue;">↓ Βάρος (m·g)</div>
+<div style="color:green;">↑ Δύναμη ελατηρίου</div>
+<div style="color:orange;">↓ Δύναμη F</div>
+<div style="color:purple;">↑ Κανονική αντίδραση</div>
+</div>
 
-  <!-- BUTTONS -->
-
-  <button onclick="startSim()">Έναρξη ταλάντωσης</button>
-  <button onclick="resetSim()">Επαναφορά</button>
-  <button onclick="togglePause()">Pause / Resume</button>
-
-  <!-- CHECKBOX -->
-
-  <label>
-    <input id="forces" type="checkbox" checked>
-    Εμφάνιση δυνάμεων
-  </label>
-
-  <!-- LEGEND -->
-
-  <div style="margin-top:10px; font-size:14px;">
-
-    <div style="color:blue;">↓ Βάρος (m·g)</div>
-    <div style="color:green;">↑ Δύναμη ελατηρίου</div>
-    <div style="color:orange;">↓ Εξωτερική δύναμη F</div>
-    <div style="color:purple;">↑ Κανονική αντίδραση</div>
-
-  </div>
+<!-- ✅ F και Fcrit ΕΔΩ (όχι στο canvas) -->
+<div style="margin-top:15px;">
+<div>F = <span id="FvalBox">0</span> N</div>
+<div>Fcrit = <span id="FcritBox">0</span> N</div>
+<div id="statusBox" style="font-weight:bold; margin-top:5px;"></div>
+</div>
 
 </div>
 
-<!-- ΤΟ JS ΣΤΟ ΤΕΛΟΣ (ΠΟΛΥ ΣΗΜΑΝΤΙΚΟ) -->
 <script src="sketch.js"></script>
-
 </body>
 </html>
-``
