@@ -47,13 +47,18 @@ function setup() {
 // --------------------------------
 
 function initSystem(){
+
   let m1 = +m1El.value;
   let k = +kEl.value;
 
   let groundY = height - 100;
-  y2 = groundY;
+
+  // ✅ Σ2 ακουμπά στο έδαφος σωστά
+  let r2 = 35; // radius
+  y2 = groundY - r2;
 
   let deltaL = (m1 * g) / k;
+
   y_eq = y2 - (L0 + deltaL) * SCALE;
 
   y1 = y_eq;
@@ -69,7 +74,6 @@ function initSystem(){
 
 function updateFmax(){
   let k = +kEl.value;
-
   let Amax = Amax_px / SCALE;
   let Fmax = k * Amax;
 
@@ -111,12 +115,10 @@ function draw(){
 
   let groundY = height - 100;
 
-  // loading
   if(state==="loading"){
     y1 = y_eq + (F/k)*SCALE;
   }
 
-  // ταλάντωση
   if(state==="oscillation" && !paused){
     let x = (y1 - y_eq)/SCALE;
     let a = -(k/m1)*x;
@@ -133,28 +135,22 @@ function draw(){
     drawForces(y1,y2,state,lift);
   }
 
-  // ✅ ΜΟΝΟ PANEL — ΟΧΙ canvas
-
   let Fcrit = (m1 + m2) * g;
 
   FvalBox.textContent = F.toFixed(1);
   FcritBox.textContent = Fcrit.toFixed(1);
 
   if(state !== "oscillation"){
-    statusBox.style.color = "gray";
     statusBox.textContent = "Πάτα 'Έναρξη'";
-  }
-  else if (Math.abs(F - Fcrit) < 1){
-    statusBox.style.color = "orange";
-    statusBox.textContent = "Στο όριο αποκόλλησης";
+    statusBox.style.color = "gray";
   }
   else if (F < Fcrit){
-    statusBox.style.color = "blue";
     statusBox.textContent = "Δεν υπάρχει αποκόλληση";
+    statusBox.style.color = "blue";
   }
   else{
-    statusBox.style.color = "red";
     statusBox.textContent = "Αποκόλληση";
+    statusBox.style.color = "red";
   }
 }
 
@@ -165,7 +161,6 @@ function drawScene(y1,y2,groundY,y_eq,F,k,lift){
   let cx = width/2;
 
   stroke(0);
-  strokeWeight(2);
   line(0,groundY+20,width,groundY+20);
 
   stroke(0,150,0);
@@ -175,23 +170,24 @@ function drawScene(y1,y2,groundY,y_eq,F,k,lift){
 
   stroke(0,0,200);
   drawingContext.setLineDash([6,6]);
-  line(cx-60,y_eq - Apx,cx+60,y_eq - Apx);
-  line(cx-60,y_eq + Apx,cx+60,y_eq + Apx);
+  line(cx-60,y_eq-Apx,cx+60,y_eq-Apx);
+  line(cx-60,y_eq+Apx,cx+60,y_eq+Apx);
   drawingContext.setLineDash([]);
 
   drawSpring(cx,y1,y2);
 
+  // σώματα
   fill(180);
   ellipse(cx,y1,60);
 
   fill(200);
   ellipse(cx,y2,70);
 
+  // ✅ labels ΔΙΠΛΑ (όχι πάνω)
   fill(0);
   noStroke();
-  textAlign(CENTER);
-  text("Σ1",cx,y1-35);
-  text("Σ2",cx,y2-40);
+  text("Σ1",cx+40,y1+5);
+  text("Σ2",cx+45,y2+5);
 
   if(state==="oscillation" && lift){
     fill(255,0,0);
@@ -202,6 +198,7 @@ function drawScene(y1,y2,groundY,y_eq,F,k,lift){
 // --------------------------------
 
 function drawSpring(x,y1,y2){
+
   let coils=12;
   let step=(y2-y1)/coils;
 
@@ -210,7 +207,7 @@ function drawSpring(x,y1,y2){
 
   beginShape();
   for(let i=0;i<=coils;i++){
-    let dx=(i%2===0)?-10:10;
+    let dx=(i%2)?10:-10;
     vertex(x+dx,y1+i*step);
   }
   endShape();
@@ -219,6 +216,7 @@ function drawSpring(x,y1,y2){
 // --------------------------------
 
 function drawArrow(x,y,dy,col){
+
   stroke(col);
   line(x,y,x,y+dy);
 
@@ -256,3 +254,4 @@ function updateLabels(m1,m2,k,F){
   kv.textContent = k+" N/m";
   Fv.textContent = Math.round(F)+" N";
 }
+``
