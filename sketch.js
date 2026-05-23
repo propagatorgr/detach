@@ -38,7 +38,7 @@ function setup(){
   FcritBox = document.getElementById("FcritBox");
   statusBox= document.getElementById("statusBox");
 
-  // ✅ ΣΗΜΑΝΤΙΚΟ: δυναμικό εύρος F
+  // ✅✅✅ ΤΟ ΜΟΝΑΔΙΚΟ FIX
   kEl.addEventListener("input", updateFmax);
 
   initSystem();
@@ -65,7 +65,7 @@ function initSystem(){
   state = "loading";
   paused = false;
 
-  updateFmax(); // ✅ συγχρονισμός F
+  updateFmax();
 }
 
 // --------------------------------
@@ -98,7 +98,7 @@ function togglePause(){
 }
 
 function resetSim(){
-  FEl.value = 0;        // ✅ σωστό reset
+  FEl.value = 0;
   initSystem();
 }
 
@@ -113,13 +113,10 @@ function draw(){
   let k  = +kEl.value;
   let F  = +FEl.value;
 
-  // UI
   m1v.textContent = m1+" kg";
   m2v.textContent = m2+" kg";
   kv.textContent  = k+" N/m";
   Fv.textContent  = F+" N";
-
-  // -------- ΚΙΝΗΣΗ --------
 
   if(state==="loading"){
     y1 = y_eq + (F/k)*SCALE;
@@ -134,15 +131,11 @@ function draw(){
     y1 += v1*dt*SCALE;
   }
 
-  // -------- ΣΧΕΔΙΑΣΗ --------
-
   drawScene(y1,y2,F,k);
 
   if(forcesEl.checked){
     drawForces(y1,y2);
   }
-
-  // -------- PANEL --------
 
   let Fcrit = (m1 + m2) * g;
 
@@ -170,15 +163,12 @@ function drawScene(y1,y2,F,k){
   let cx = width/2;
   let groundY = height-100;
 
-  // έδαφος
   stroke(0);
   line(0,groundY+20,width,groundY+20);
 
-  // ισορροπία
   stroke(0,150,0);
   line(cx-50,y_eq,cx+50,y_eq);
 
-  // πλάτος
   let Apx = (F/k)*SCALE;
 
   stroke(0,0,200);
@@ -189,19 +179,16 @@ function drawScene(y1,y2,F,k){
 
   drawingContext.setLineDash([]);
 
-  // ελατήριο
   let r1=30;
   let r2=35;
   drawSpring(cx,y1+r1,y2-r2);
 
-  // σώματα
   fill(180);
   ellipse(cx,y1,60);
 
   fill(200);
   ellipse(cx,y2,70);
 
-  // labels
   fill(0);
   noStroke();
   text("Σ1",cx+40,y1);
@@ -243,19 +230,15 @@ function drawForces(y1,y2){
 
   let cx = width/2;
 
-  // βάρη
   drawArrow(cx,y1,40,color(0,0,255));
   drawArrow(cx,y2,40,color(0,0,255));
 
-  // ελατήριο
   drawArrow(cx-20,y1,-40,color(0,150,0));
   drawArrow(cx-20,y2,40,color(0,150,0));
 
-  // F
   if(state==="loading"){
     drawArrow(cx+20,y1,40,color(255,150,0));
   }
 
-  // N
   drawArrow(cx+20,y2,-40,color(150,0,150));
 }
