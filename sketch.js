@@ -1,19 +1,19 @@
 let g = 10;
 
-let state = "loading"; // loading, oscillation
+let state = "loading"; // loading | oscillation
 
 let y1, v1;
 let y2;
 
 let y_eq;
 
-let dt = 0.02;
+let dt = 0.016;
 
-// scale για να φαίνεται η μετατόπιση
-let SCALE = 120;  
+// ΟΠΤΙΚΗ ΚΛΙΜΑΚΑ (1 m = pixels)
+let SCALE = 200;
 
-// γεωμετρικό μήκος
-let L0 = 2 * SCALE;  // 2 m οπτικά
+// φυσικό μήκος (σε m)
+let L0 = 1.5;
 
 // --------------------------------
 
@@ -35,13 +35,15 @@ function initSystem() {
   let k = +kEl.value;
 
   let groundY = height - 100;
+
   y2 = groundY;
 
-  // ισορροπία (μόνο m1)
+  // ισορροπία: kΔl = m1 g
   let deltaL = (m1 * g) / k;
-  let L_eq = L0 + deltaL * SCALE;
 
-  y_eq = y2 - L_eq;
+  let L_eq_px = (L0 + deltaL) * SCALE;
+
+  y_eq = y2 - L_eq_px;
 
   y1 = y_eq;
   v1 = 0;
@@ -63,19 +65,6 @@ function resetSim() {
 
 // --------------------------------
 
-// 🔴 ΚΡΙΣΙΜΟ: άμεση αντίδραση slider
-FEl.addEventListener("input", () => {
-  if (state === "loading") {
-    let k = +kEl.value;
-    let F = +FEl.value;
-
-    let A = (F / k) * SCALE;
-    y1 = y_eq + A;
-  }
-});
-
-// --------------------------------
-
 function draw() {
 
   background(255);
@@ -87,34 +76,31 @@ function draw() {
 
   updateLabels(m1, m2, k, F);
 
+  let groundY = height - 100;
+
   // -------- LOADING --------
   if (state === "loading") {
-    let A = (F / k) * SCALE;
+    let A = (F / k) * SCALE;   // σε pixels
     y1 = y_eq + A;
   }
 
   // -------- ΤΑΛΑΝΤΩΣΗ --------
   if (state === "oscillation") {
 
-    let x = y1 - y_eq;             // απομάκρυνση σε pixel
-    let a = -(k / m1) * (x / SCALE) * SCALE;
-
-    // απλοποιείται σε:
-    // a = -(k/m1)*x
-
-    a = -(k / m1) * x;
+    let x = (y1 - y_eq) / SCALE;   // σε m
+    let a = -(k / m1) * x;
 
     v1 += a * dt;
-    y1 += v1 * dt;
+    y1 += v1 * dt * SCALE;
   }
 
-  // δύναμη ελατηρίου (για ένδειξη αποκόλλησης)
-  let L = y2 - y1;
-  let Fel = (L - L0) / SCALE * k;
+  // δύναμη ελατηρίου (σε Ν)
+  let L = (y2 - y1) / SCALE;
+  let Fel = k * (L - L0);
 
   let lift = (F >= (m1 + m2) * g);
 
-  drawScene(y1, y2, lift, y_eq);
+  drawScene(y1, y2, groundY, lift, y_eq);
 
   if (forcesEl.checked) {
     drawForces(y1, y2, state, lift);
@@ -123,13 +109,13 @@ function draw() {
 
 // --------------------------------
 
-function drawScene(y1, y2, lift, y_eq) {
+function drawScene(y1, y2, groundY, lift, y_eq) {
 
   let cx = width / 2;
-  let groundY = height - 100;
 
+  strokeWeight(2);
   stroke(0);
-  line(0, groundY + 30, width, groundY + 30);
+  line(0, groundY + 20, width, groundY + 20);
 
   // γραμμή ισορροπίας
   stroke(0, 150, 0);
@@ -159,7 +145,7 @@ function drawScene(y1, y2, lift, y_eq) {
 
 function drawSpring(x, y1, y2) {
 
-  let coils = 14;
+  let coils = 12;
   let step = (y2 - y1) / coils;
 
   stroke(0);
