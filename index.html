@@ -40,7 +40,6 @@ button {
   padding: 8px;
 }
 </style>
-
 </head>
 
 <body>
@@ -49,16 +48,16 @@ button {
 
 <h3>Ρυθμίσεις</h3>
 
-<label>Μάζα Σ1: <span id="m1v" class="value"></span></label>
+<label>Μάζα Σ1: <span id="m1v"></span></label>
 <input id="m1" type="range" min="2" max="10" value="4">
 
-<label>Μάζα Σ2: <span id="m2v" class="value"></span></label>
+<label>Μάζα Σ2: <span id="m2v"></span></label>
 <input id="m2" type="range" min="2" max="10" value="6">
 
-<label>k: <span id="kv" class="value"></span></label>
+<label>k: <span id="kv"></span></label>
 <input id="k" type="range" min="20" max="200" value="80">
 
-<label>F: <span id="Fv" class="value"></span></label>
+<label>F: <span id="Fv"></span></label>
 <input id="F" type="range" min="0" max="50" value="0">
 
 <button onclick="startSim()">Έναρξη ταλάντωσης</button>
@@ -70,7 +69,6 @@ button {
 Εμφάνιση δυνάμεων
 </label>
 
-<!-- Legend -->
 <div style="margin-top:10px; font-size:14px;">
 <div style="color:blue;">↓ Βάρος (m·g)</div>
 <div style="color:green;">↑ Δύναμη ελατηρίου</div>
@@ -78,15 +76,15 @@ button {
 <div style="color:purple;">↑ Κανονική αντίδραση</div>
 </div>
 
-<!-- ✅ F και Fcrit ΕΔΩ (όχι στο canvas) -->
 <div style="margin-top:15px;">
 <div>F = <span id="FvalBox">0</span> N</div>
 <div>Fcrit = <span id="FcritBox">0</span> N</div>
-<div id="statusBox" style="font-weight:bold; margin-top:5px;"></div>
+<div id="statusBox" style="font-weight:bold;"></div>
 </div>
 
 </div>
 
 <script src="sketch.js"></script>
+
 </body>
 </html>
