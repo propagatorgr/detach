@@ -1,6 +1,5 @@
 let g = 10;
 
-// DOM
 let m1El, m2El, kEl, FEl, forcesEl;
 let m1v, m2v, kv, Fv;
 
@@ -16,9 +15,13 @@ let dt = 0.016;
 let SCALE = 200;
 let L0 = 1.5;
 
+// ✅ νέο
+let Amax_px = 140;
+
 // --------------------------------
 
 function setup() {
+
   createCanvas(window.innerWidth - 260, window.innerHeight);
 
   m1El = document.getElementById("m1");
@@ -32,15 +35,13 @@ function setup() {
   kv = document.getElementById("kv");
   Fv = document.getElementById("Fv");
 
-  // ✅ καλύτερο range F
-  FEl.max = 80;
-
   initSystem();
 }
 
 // --------------------------------
 
 function initSystem(){
+
   let m1 = +m1El.value;
   let k = +kEl.value;
 
@@ -55,6 +56,22 @@ function initSystem(){
 
   state = "loading";
   paused = false;
+
+  updateFmax();
+}
+
+// ✅ ΔΥΝΑΜΙΚΟ F MAX
+function updateFmax(){
+  let k = +kEl.value;
+
+  let Amax = Amax_px / SCALE;
+  let Fmax = k * Amax;
+
+  FEl.max = Math.round(Fmax);
+
+  if (+FEl.value > Fmax) {
+    FEl.value = Fmax;
+  }
 }
 
 // --------------------------------
@@ -86,6 +103,9 @@ function draw(){
 
   updateLabels(m1,m2,k,F);
 
+  // ✅ αν αλλάξει k → αναπροσαρμόζεται
+  updateFmax();
+
   let groundY = height - 100;
 
   if(state==="loading"){
@@ -102,7 +122,7 @@ function draw(){
 
   let lift = (F >= (m1+m2)*g);
 
-  drawScene(y1,y2,groundY,y_eq,F,k, lift);
+  drawScene(y1,y2,groundY,y_eq,F,k,lift);
 
   if(forcesEl.checked){
     drawForces(y1,y2,state,lift);
@@ -119,11 +139,9 @@ function drawScene(y1,y2,groundY,y_eq,F,k,lift){
   strokeWeight(2);
   line(0,groundY+20,width,groundY+20);
 
-  // ισορροπία
   stroke(0,150,0);
   line(cx-50,y_eq,cx+50,y_eq);
 
-  // --- Α ---
   let Apx = (F/k)*SCALE;
 
   stroke(0,0,200);
@@ -146,7 +164,6 @@ function drawScene(y1,y2,groundY,y_eq,F,k,lift){
   text("Σ1",cx,y1-35);
   text("Σ2",cx,y2-40);
 
-  // ✅ μόνο όταν έχει ξεκινήσει
   if(state==="oscillation" && lift){
     fill(255,0,0);
     text("Αποκόλληση",cx,40);
@@ -190,20 +207,16 @@ function drawForces(y1,y2,state,lift){
 
   let cx = width/2;
 
-  // βάρος (μπλε)
   drawArrow(cx,y1,40,color(0,0,255));
   drawArrow(cx,y2,40,color(0,0,255));
 
-  // ελατήριο (πράσινο)
   drawArrow(cx-20,y1,-40,color(0,150,0));
   drawArrow(cx-20,y2,-40,color(0,150,0));
 
-  // F (πορτοκαλί)
   if(state==="loading"){
     drawArrow(cx+20,y1,40,color(255,150,0));
   }
 
-  // Ν (μωβ)
   if(!lift){
     drawArrow(cx+20,y2,-40,color(150,0,150));
   }
@@ -215,6 +228,5 @@ function updateLabels(m1,m2,k,F){
   m1v.textContent = m1+" kg";
   m2v.textContent = m2+" kg";
   kv.textContent = k+" N/m";
-  Fv.textContent = F+" N";
+  Fv.textContent = Math.round(F)+" N";
 }
-``
