@@ -1,11 +1,16 @@
 let g = 9.8;
+
 let y1, v1;
 let y2, v2;
 
 let running = false;
 
-let L0 = 180; // ΠΟΛΥ μεγαλύτερο φυσικό μήκος
-let dt = 0.03;
+let dt = 0.02;
+
+// Γεωμετρία
+let blockH1 = 60;
+let blockH2 = 70;
+let L0 = 220; // μεγάλο φυσικό μήκος
 
 // --------------------------------
 
@@ -29,12 +34,11 @@ function resetSim() {
   let groundY = height - 80;
 
   y2 = groundY;
-
-  // Δίνουμε ΑΡΧΙΚΗ ΠΑΡΑΜΟΡΦΩΣΗ για να υπάρξει ταλάντωση
-  y1 = y2 - L0 - 80;
-
-  v1 = 0;
   v2 = 0;
+
+  // αρχική επιμήκυνση για καθαρή ταλάντωση
+  y1 = y2 - L0 - 90;
+  v1 = 0;
 
   running = false;
 }
@@ -54,37 +58,47 @@ function draw() {
 
   let groundY = height - 80;
 
-  // ----------- ΦΥΣΙΚΗ -----------
+  // ---------- ΦΥΣΙΚΗ ----------
 
-  let L = (y2 - y1);
-  let Fel = k * (L - L0);
+  // πραγματικό μήκος ελατηρίου (από επιφάνειες)
+  let topOfS2 = y2 - blockH2 / 2;
+  let bottomOfS1 = y1 + blockH1 / 2;
+
+  let L = topOfS2 - bottomOfS1;
+
+  // ΔΥΝΑΜΗ ΕΛΑΤΗΡΙΟΥ (σωστό πρόσημο)
+  let Fel = -k * (L - L0);
 
   if (running) {
 
-    // Σ1
-    let a1 = (F + m1*g - Fel) / m1;
+    // ---- Σ1 ----
+    let a1 = (F + m1 * g + Fel) / m1;
     v1 += a1 * dt;
-    y1 += v1;
+    y1 += v1 * dt;
 
-    // Σ2
-    let Fnet2 = Fel - m2*g;
+    // ---- Σ2 ----
+    let force2 = -Fel - m2 * g;
 
     if (y2 >= groundY) {
-      y2 = groundY;
-      v2 = 0;
 
-      // επαφή
-      if (Fnet2 > 0) {
+      // ακουμπάει
+      y2 = groundY;
+
+      if (v2 > 0) v2 = 0;
+
+      if (force2 > 0) {
         // αποκόλληση
-        let a2 = Fnet2 / m2;
+        let a2 = force2 / m2;
         v2 += a2 * dt;
-        y2 += v2;
+        y2 += v2 * dt;
       }
+
     } else {
+
       // ελεύθερη κίνηση
-      let a2 = Fnet2 / m2;
+      let a2 = force2 / m2;
       v2 += a2 * dt;
-      y2 += v2;
+      y2 += v2 * dt;
     }
   }
 
@@ -101,18 +115,20 @@ function drawScene(y1, y2, groundY) {
 
   let cx = width / 2;
 
+  // έδαφος
   stroke(0);
   line(0, groundY + 30, width, groundY + 30);
 
   // ελατήριο
-  drawSpring(cx, y1, y2);
+  drawSpring(cx, y1 + blockH1 / 2, y2 - blockH2 / 2);
 
-  // σώματα
+  // Σ1
   fill(180);
-  rect(cx - 30, y1 - 30, 60, 60);
+  rect(cx - 30, y1 - blockH1 / 2, 60, blockH1);
 
+  // Σ2
   fill(200);
-  rect(cx - 35, y2 - 35, 70, 70);
+  rect(cx - 35, y2 - blockH2 / 2, 70, blockH2);
 
   fill(0);
   noStroke();
@@ -123,10 +139,10 @@ function drawScene(y1, y2, groundY) {
 
 // --------------------------------
 
-function drawSpring(x, y1, y2) {
+function drawSpring(x, yTop, yBottom) {
 
   let coils = 14;
-  let step = (y2 - y1) / coils;
+  let step = (yBottom - yTop) / coils;
 
   stroke(0);
   noFill();
@@ -134,7 +150,7 @@ function drawSpring(x, y1, y2) {
   beginShape();
   for (let i = 0; i <= coils; i++) {
     let dx = (i % 2 === 0) ? -12 : 12;
-    vertex(x + dx, y1 + i * step);
+    vertex(x + dx, yTop + i * step);
   }
   endShape();
 }
@@ -160,7 +176,7 @@ function drawArrow(x, y, dx, dy, label) {
 
   noStroke();
   fill(255, 0, 0);
-  text(label, x + dx + 4, y + dy);
+  text(label, x + dx + 5, y + dy);
 }
 
 // --------------------------------
@@ -168,18 +184,21 @@ function drawArrow(x, y, dx, dy, label) {
 function drawForces(y1, y2, m1, m2, F, Fel) {
 
   let cx = width / 2;
+  let scale = 0.4;
 
-  // Σ1 (κέντρο σώματος)
-  drawArrow(cx, y1, 0, 50, "m1g");
-  drawArrow(cx + 25, y1, 0, 50, "F");
-  drawArrow(cx - 25, y1, 0, -50, "Fελ");
+  // Σ1
+  drawArrow(cx, y1, 0, 40, "m1g");
+  drawArrow(cx + 25, y1, 0, 40, "F");
+
+  drawArrow(cx - 25, y1, 0, -40, "Fελ");
 
   // Σ2
-  drawArrow(cx, y2, 0, 50, "m2g");
-  drawArrow(cx - 25, y2, 0, -50, "Fελ");
+  drawArrow(cx, y2, 0, 40, "m2g");
+
+  drawArrow(cx - 25, y2, 0, -40, "Fελ");
 
   if (y2 >= height - 80) {
-    drawArrow(cx + 25, y2, 0, -50, "N");
+    drawArrow(cx + 25, y2, 0, -40, "N");
   }
 }
 
@@ -204,4 +223,3 @@ const m1v = document.getElementById("m1v");
 const m2v = document.getElementById("m2v");
 const kv = document.getElementById("kv");
 const Fv = document.getElementById("Fv");
-
