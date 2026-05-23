@@ -1,30 +1,26 @@
 let g = 10;
 
-// DOM στοιχεία (θα αρχικοποιηθούν στο setup)
-let m1El, m2El, kEl, FEl;
+// DOM
+let m1El, m2El, kEl, FEl, forcesEl;
 let m1v, m2v, kv, Fv;
-let forcesEl;
 
-// κατάσταση
-let state = "loading"; // loading | oscillation
+let state = "loading";
+let paused = false;
 
 let y1, v1;
 let y2;
-
 let y_eq;
 
 let dt = 0.016;
 
-let SCALE = 200;   // pixels/m
-let L0 = 1.5;      // m
+let SCALE = 200;
+let L0 = 1.5;
 
 // --------------------------------
 
 function setup() {
-
   createCanvas(window.innerWidth - 260, window.innerHeight);
 
-  // ✅ DOM init ΕΔΩ (ΟΧΙ πριν)
   m1El = document.getElementById("m1");
   m2El = document.getElementById("m2");
   kEl = document.getElementById("k");
@@ -36,36 +32,29 @@ function setup() {
   kv = document.getElementById("kv");
   Fv = document.getElementById("Fv");
 
-  initSystem();
-}
+  // ✅ καλύτερο range F
+  FEl.max = 80;
 
-// --------------------------------
-
-function windowResized() {
-  resizeCanvas(window.innerWidth - 260, window.innerHeight);
   initSystem();
 }
 
 // --------------------------------
 
 function initSystem(){
-
   let m1 = +m1El.value;
   let k = +kEl.value;
 
   let groundY = height - 100;
   y2 = groundY;
 
-  // ισορροπία
-  let deltaL = (m1 * g) / k;
-  let L_eq_px = (L0 + deltaL) * SCALE;
-
-  y_eq = y2 - L_eq_px;
+  let deltaL = (m1*g)/k;
+  y_eq = y2 - (L0 + deltaL)*SCALE;
 
   y1 = y_eq;
   v1 = 0;
 
   state = "loading";
+  paused = false;
 }
 
 // --------------------------------
@@ -73,6 +62,10 @@ function initSystem(){
 function startSim(){
   v1 = 0;
   state = "oscillation";
+}
+
+function togglePause(){
+  paused = !paused;
 }
 
 function resetSim(){
@@ -95,15 +88,11 @@ function draw(){
 
   let groundY = height - 100;
 
-  // --- loading ---
   if(state==="loading"){
-    let Apx = (F/k) * SCALE;
-    y1 = y_eq + Apx;
+    y1 = y_eq + (F/k)*SCALE;
   }
 
-  // --- ταλάντωση ---
-  if(state==="oscillation"){
-
+  if(state==="oscillation" && !paused){
     let x = (y1 - y_eq)/SCALE;
     let a = -(k/m1)*x;
 
@@ -111,9 +100,9 @@ function draw(){
     y1 += v1*dt*SCALE;
   }
 
-  let lift = (F >= (m1 + m2)*g);
+  let lift = (F >= (m1+m2)*g);
 
-  drawScene(y1,y2,groundY,lift,y_eq,F,k);
+  drawScene(y1,y2,groundY,y_eq,F,k, lift);
 
   if(forcesEl.checked){
     drawForces(y1,y2,state,lift);
@@ -122,37 +111,29 @@ function draw(){
 
 // --------------------------------
 
-function drawScene(y1,y2,groundY,lift,y_eq,F,k){
+function drawScene(y1,y2,groundY,y_eq,F,k,lift){
 
   let cx = width/2;
 
-  // έδαφος
-  strokeWeight(2);
   stroke(0);
+  strokeWeight(2);
   line(0,groundY+20,width,groundY+20);
 
-  // γραμμή ισορροπίας
+  // ισορροπία
   stroke(0,150,0);
   line(cx-50,y_eq,cx+50,y_eq);
 
-  // -------- NEW: ΓΡΑΜΜΕΣ ΠΛΑΤΟΥΣ --------
+  // --- Α ---
   let Apx = (F/k)*SCALE;
 
   stroke(0,0,200);
   drawingContext.setLineDash([6,6]);
-
-  // πάνω
-  line(cx-60, y_eq - Apx, cx+60, y_eq - Apx);
-
-  // κάτω
-  line(cx-60, y_eq + Apx, cx+60, y_eq + Apx);
-
+  line(cx-60,y_eq - Apx,cx+60,y_eq - Apx);
+  line(cx-60,y_eq + Apx,cx+60,y_eq + Apx);
   drawingContext.setLineDash([]);
 
-  // ελατήριο
   drawSpring(cx,y1,y2);
 
-  // σώματα
   fill(180);
   ellipse(cx,y1,60);
 
@@ -165,7 +146,8 @@ function drawScene(y1,y2,groundY,lift,y_eq,F,k){
   text("Σ1",cx,y1-35);
   text("Σ2",cx,y2-40);
 
-  if(lift){
+  // ✅ μόνο όταν έχει ξεκινήσει
+  if(state==="oscillation" && lift){
     fill(255,0,0);
     text("Αποκόλληση",cx,40);
   }
@@ -191,40 +173,39 @@ function drawSpring(x,y1,y2){
 
 // --------------------------------
 
-function drawArrow(x,y,dy,label){
+function drawArrow(x,y,dy,col){
 
-  stroke(255,0,0);
+  stroke(col);
   line(x,y,x,y+dy);
 
   let s = dy>0?1:-1;
 
   line(x,y+dy,x-6,y+dy-6*s);
   line(x,y+dy,x+6,y+dy-6*s);
-
-  noStroke();
-  fill(255,0,0);
-  text(label,x+5,y+dy);
 }
 
 // --------------------------------
 
 function drawForces(y1,y2,state,lift){
 
-  let cx=width/2;
+  let cx = width/2;
 
-  drawArrow(cx,y1,40,"m1g");
+  // βάρος (μπλε)
+  drawArrow(cx,y1,40,color(0,0,255));
+  drawArrow(cx,y2,40,color(0,0,255));
 
+  // ελατήριο (πράσινο)
+  drawArrow(cx-20,y1,-40,color(0,150,0));
+  drawArrow(cx-20,y2,-40,color(0,150,0));
+
+  // F (πορτοκαλί)
   if(state==="loading"){
-    drawArrow(cx+20,y1,40,"F");
+    drawArrow(cx+20,y1,40,color(255,150,0));
   }
 
-  drawArrow(cx-20,y1,-40,"Fελ");
-
-  drawArrow(cx,y2,40,"m2g");
-  drawArrow(cx-20,y2,-40,"Fελ");
-
+  // Ν (μωβ)
   if(!lift){
-    drawArrow(cx+20,y2,-40,"N");
+    drawArrow(cx+20,y2,-40,color(150,0,150));
   }
 }
 
@@ -236,3 +217,4 @@ function updateLabels(m1,m2,k,F){
   kv.textContent = k+" N/m";
   Fv.textContent = F+" N";
 }
+``
