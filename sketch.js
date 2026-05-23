@@ -2,7 +2,6 @@ let g = 10;
 
 let m1El, m2El, kEl, FEl, forcesEl;
 let m1v, m2v, kv, Fv;
-
 let FvalBox, FcritBox;
 
 let y1, v1;
@@ -12,12 +11,12 @@ let y_eq;
 let y_L0;
 
 let dt = 0.016;
-
 let SCALE = 200;
 let L0 = 1.5;
 
 let state = "loading";
 let paused = false;
+let detached = false;
 
 // --------------------------------
 
@@ -56,8 +55,10 @@ function initSystem(){
   let r2 = 35;
   y2 = (groundY + 20) - r2;
 
+  // φυσικό μήκος
   y_L0 = y2 - L0 * SCALE;
 
+  // ισορροπία
   let deltaL = (m1 * g) / k;
   y_eq = y_L0 + deltaL * SCALE;
 
@@ -66,6 +67,7 @@ function initSystem(){
 
   state = "loading";
   paused = false;
+  detached = false;
 
   updateFmax();
 }
@@ -113,16 +115,18 @@ function draw(){
   let k  = +kEl.value;
   let F  = +FEl.value;
 
+  // labels
   m1v.textContent = m1 + " kg";
   m2v.textContent = m2 + " kg";
   kv.textContent  = k + " N/m";
   Fv.textContent  = Math.round(F) + " N";
 
+  // panel
   let Fcrit = (m1 + m2) * g;
   FvalBox.textContent  = F.toFixed(1);
   FcritBox.textContent = Fcrit.toFixed(1);
 
-  let lift = (F > Fcrit);
+  // ----------------
 
   if(state === "loading"){
     y1 = y_eq + (F / k) * SCALE;
@@ -135,9 +139,18 @@ function draw(){
 
     v1 += a * dt;
     y1 += v1 * dt * SCALE;
+
+    // ✅ ΕΛΕΓΧΟΣ ΑΠΟΚΟΛΛΗΣΗΣ (+A πάνω από L0)
+    let A = F / k;
+    let y_top = y_eq - A * SCALE;
+
+    if(!detached && y_top < y_L0){
+      detached = true;
+      paused = true;
+    }
   }
 
-  drawScene(y1, y2, k, lift);
+  drawScene(y1, y2, k);
 
   if(forcesEl.checked){
     drawForces(y1, y2);
@@ -146,22 +159,26 @@ function draw(){
 
 // --------------------------------
 
-function drawScene(y1,y2,k,lift){
+function drawScene(y1,y2,k){
 
   let cx = width/2;
   let groundY = height - 100;
 
+  // έδαφος
   stroke(0);
   line(0, groundY+20, width, groundY+20);
 
+  // Θ.Ι.
   stroke(0,150,0);
   line(cx-50, y_eq, cx+50, y_eq);
 
+  // φυσικό μήκος
   stroke(200,0,0);
   drawingContext.setLineDash([5,5]);
   line(cx-50, y_L0, cx+50, y_L0);
   drawingContext.setLineDash([]);
 
+  // Α
   let F = +FEl.value;
   let Apx = (F/k)*SCALE;
 
@@ -171,9 +188,11 @@ function drawScene(y1,y2,k,lift){
   line(cx-60, y_eq+Apx, cx+60, y_eq+Apx);
   drawingContext.setLineDash([]);
 
+  // ελατήριο
   let r1=30, r2=35;
   drawSpring(cx, y1+r1, y2-r2);
 
+  // σώματα
   fill(180);
   ellipse(cx,y1,60);
 
@@ -185,7 +204,8 @@ function drawScene(y1,y2,k,lift){
   text("Σ1",cx+40,y1);
   text("Σ2",cx+40,y2);
 
-  if(lift && state === "oscillation"){
+  // ✅ ΕΝΔΕΙΞΗ ΑΠΟΚΟΛΛΗΣΗΣ
+  if(detached){
     fill(255,0,0);
     textSize(18);
     textAlign(CENTER);
@@ -226,17 +246,22 @@ function drawForces(y1,y2){
 
   let cx = width/2;
 
+  // ✅ ΚΡΙΤΗΡΙΟ ΦΥΣΙΚΟΥ ΜΗΚΟΥΣ
   let sign = (y1 < y_L0) ? -1 : 1;
 
+  // βάρη
   drawArrow(cx,y1,40,color(0,0,255));
   drawArrow(cx,y2,40,color(0,0,255));
 
+  // ελατήριο
   drawArrow(cx-20,y1, -40*sign, color(0,150,0));
   drawArrow(cx-20,y2,  40*sign, color(0,150,0));
 
+  // F
   if(state==="loading"){
     drawArrow(cx+20,y1,40,color(255,150,0));
   }
 
+  // Ν
   drawArrow(cx+20,y2,-40,color(150,0,150));
 }
