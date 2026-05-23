@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="el">
+<head>
+  <meta charset="UTF-8">
+  <title>Σύστημα Ελατηρίου</title>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.0/p5.min.js"></script>
+  <script defer src="sketch.js"></script>
+
+  <style>
+    body {
+      margin: 0;
+      display: flex;
+      height: 100vh;
+      font-family: sans-serif;
+    }
+
+    #controls {
+      width: 260px;
+      background: #f0f0f0;
+      padding: 15px;
+      box-sizing: border-box;
+    }
+
+    canvas {
+      flex: 1;
+    }
+
+    label {
+      display: block;
+      margin-top: 10px;
+    }
+
+    .value {
+      font-weight: bold;
+      color: #333;
+    }
+
+    button {
+      margin-top: 15px;
+      width: 100%;
+      padding: 8px;
+    }
+  </style>
+</head>
+
+<body>
+
+<div id="controls">
+
+  <h3>Ρυθμίσεις</h3>
+
+  <label>
+    Μάζα Σ1:
+    <span class="value" id="m1v"></span>
+  </label>
+  <input id="m1" type="range" min="2" max="10" value="4">
+
+  <label>
+    Μάζα Σ2:
+    <span class="value" id="m2v"></span>
+  </label>
+  <input id="m2" type="range" min="2" max="10" value="6">
+
+  <label>
+    k:
+    <span class="value" id="kv"></span>
+  </label>
+  <input id="k" type="range" min="20" max="200" value="80">
+
+  <label>
+    F:
+    <span class="value" id="Fv"></span>
+  </label>
+  <input id="F" type="range" min="0" max="200" value="50">
+
+  <button onclick="startSim()">Έναρξη ταλάντωσης</button>
+  <button onclick="resetSim()">Επαναφορά</button>
+
+  <label>
+    <input id="forces" type="checkbox" checked>
+    Εμφάνιση δυνάμεων
+  </label>
+
+</div>
+
+</body>
+</html>
+``
