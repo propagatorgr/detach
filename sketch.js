@@ -230,7 +230,7 @@ function drawForces(y1,y2,k){
   let cx = width/2;
 
   // ✅ ΣΩΣΤΟΣ ΥΠΟΛΟΓΙΣΜΟΣ ΠΑΡΑΜΟΡΦΩΣΗΣ
-  let L = (y2 - 35) - (y1 + 30);
+  let L =-(y2 - 35) + (y1 + 30);
   let deltaL = (L / SCALE) - L0;
 
   // ✅ ΣΩΣΤΟ ΠΡΟΣΗΜΟ
