@@ -39,7 +39,6 @@ function setup() {
   FcritBox = document.getElementById("FcritBox");
   statusBox = document.getElementById("statusBox");
 
-  // ✅ F max αλλάζει μόνο όταν αλλάζει k
   kEl.addEventListener("input", updateFmax);
 
   initSystem();
@@ -112,10 +111,12 @@ function draw(){
 
   let groundY = height - 100;
 
+  // loading
   if(state==="loading"){
     y1 = y_eq + (F/k)*SCALE;
   }
 
+  // ταλάντωση
   if(state==="oscillation" && !paused){
     let x = (y1 - y_eq)/SCALE;
     let a = -(k/m1)*x;
@@ -132,7 +133,7 @@ function draw(){
     drawForces(y1,y2,state,lift);
   }
 
-  // ✅ ΕΝΔΕΙΞΕΙΣ ΣΤΟ PANEL
+  // ✅ ΜΟΝΟ PANEL — ΟΧΙ canvas
 
   let Fcrit = (m1 + m2) * g;
 
@@ -255,4 +256,3 @@ function updateLabels(m1,m2,k,F){
   kv.textContent = k+" N/m";
   Fv.textContent = Math.round(F)+" N";
 }
-``
