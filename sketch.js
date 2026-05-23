@@ -177,7 +177,11 @@ function drawScene(y1,y2,groundY,y_eq,F,k,lift){
   line(cx-60,y_eq+Apx,cx+60,y_eq+Apx);
   drawingContext.setLineDash([]);
 
-  drawSpring(cx,y1,y2);
+ let r1 = 60/2;
+let r2 = 70/2;
+
+drawSpring(cx, y1 + r1, y2 - r2);
+
 
   // σώματα
   fill(180);
