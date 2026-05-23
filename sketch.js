@@ -39,7 +39,6 @@ function setup(){
   FvalBox  = document.getElementById("FvalBox");
   FcritBox = document.getElementById("FcritBox");
 
-  // 👉 κρίσιμο: F range αλλάζει όταν αλλάζει k
   kEl.addEventListener("input", updateFmax);
 
   initSystem();
@@ -57,10 +56,8 @@ function initSystem(){
   let r2 = 35;
   y2 = (groundY + 20) - r2;
 
-  // ✅ ΦΥΣΙΚΟ ΜΗΚΟΣ
   y_L0 = y2 - L0 * SCALE;
 
-  // ✅ ΘΕΣΗ ΙΣΟΡΡΟΠΙΑΣ (ΚΑΤΩ από L0)
   let deltaL = (m1 * g) / k;
   y_eq = y_L0 + deltaL * SCALE;
 
@@ -116,18 +113,16 @@ function draw(){
   let k  = +kEl.value;
   let F  = +FEl.value;
 
-  // labels
   m1v.textContent = m1 + " kg";
   m2v.textContent = m2 + " kg";
   kv.textContent  = k + " N/m";
   Fv.textContent  = Math.round(F) + " N";
 
-  // ✅ PANEL
   let Fcrit = (m1 + m2) * g;
   FvalBox.textContent  = F.toFixed(1);
   FcritBox.textContent = Fcrit.toFixed(1);
 
-  // ----------------
+  let lift = (F > Fcrit);
 
   if(state === "loading"){
     y1 = y_eq + (F / k) * SCALE;
@@ -142,7 +137,7 @@ function draw(){
     y1 += v1 * dt * SCALE;
   }
 
-  drawScene(y1, y2, k);
+  drawScene(y1, y2, k, lift);
 
   if(forcesEl.checked){
     drawForces(y1, y2);
@@ -151,26 +146,22 @@ function draw(){
 
 // --------------------------------
 
-function drawScene(y1,y2,k){
+function drawScene(y1,y2,k,lift){
 
   let cx = width/2;
   let groundY = height - 100;
 
-  // έδαφος
   stroke(0);
   line(0, groundY+20, width, groundY+20);
 
-  // Θ.Ι.
   stroke(0,150,0);
   line(cx-50, y_eq, cx+50, y_eq);
 
-  // ΦΥΣΙΚΟ ΜΗΚΟΣ (κόκκινη)
   stroke(200,0,0);
   drawingContext.setLineDash([5,5]);
   line(cx-50, y_L0, cx+50, y_L0);
   drawingContext.setLineDash([]);
 
-  // ΠΛΑΤΟΣ
   let F = +FEl.value;
   let Apx = (F/k)*SCALE;
 
@@ -180,11 +171,9 @@ function drawScene(y1,y2,k){
   line(cx-60, y_eq+Apx, cx+60, y_eq+Apx);
   drawingContext.setLineDash([]);
 
-  // ελατήριο
   let r1=30, r2=35;
   drawSpring(cx, y1+r1, y2-r2);
 
-  // σώματα
   fill(180);
   ellipse(cx,y1,60);
 
@@ -195,6 +184,13 @@ function drawScene(y1,y2,k){
   noStroke();
   text("Σ1",cx+40,y1);
   text("Σ2",cx+40,y2);
+
+  if(lift && state === "oscillation"){
+    fill(255,0,0);
+    textSize(18);
+    textAlign(CENTER);
+    text("Αποκόλληση", cx, 40);
+  }
 }
 
 // --------------------------------
@@ -230,22 +226,17 @@ function drawForces(y1,y2){
 
   let cx = width/2;
 
-  // ✅ ΤΟ ΣΩΣΤΟ ΚΡΙΤΗΡΙΟ (ΤΕΛΟΣ ΣΕ ΟΛΑ ΤΑ ΛΑΘΗ)
   let sign = (y1 < y_L0) ? -1 : 1;
 
-  // βάρη
   drawArrow(cx,y1,40,color(0,0,255));
   drawArrow(cx,y2,40,color(0,0,255));
 
-  // ✅ ΕΛΑΤΗΡΙΟ (ΑΛΛΑΖΕΙ ΟΤΑΝ ΠΕΡΝΑ ΤΗΝ ΚΟΚΚΙΝΗ)
-  drawArrow(cx-20,y1, -40*sign, color(0,150,0)); // Σ1
-  drawArrow(cx-20,y2,  40*sign, color(0,150,0)); // Σ2
+  drawArrow(cx-20,y1, -40*sign, color(0,150,0));
+  drawArrow(cx-20,y2,  40*sign, color(0,150,0));
 
-  // F
   if(state==="loading"){
     drawArrow(cx+20,y1,40,color(255,150,0));
   }
 
-  // Ν
   drawArrow(cx+20,y2,-40,color(150,0,150));
 }
