@@ -39,7 +39,7 @@ function setup(){
   FvalBox  = document.getElementById("FvalBox");
   FcritBox = document.getElementById("FcritBox");
 
-  // ✅ ΚΡΙΣΙΜΟ: αλλάζει F range όταν αλλάζει k
+  // 👉 κρίσιμο: F range αλλάζει όταν αλλάζει k
   kEl.addEventListener("input", updateFmax);
 
   initSystem();
@@ -57,10 +57,10 @@ function initSystem(){
   let r2 = 35;
   y2 = (groundY + 20) - r2;
 
-  // φυσικό μήκος
+  // ✅ ΦΥΣΙΚΟ ΜΗΚΟΣ
   y_L0 = y2 - L0 * SCALE;
 
-  // ισορροπία (ΚΑΤΩ από L0!)
+  // ✅ ΘΕΣΗ ΙΣΟΡΡΟΠΙΑΣ (ΚΑΤΩ από L0)
   let deltaL = (m1 * g) / k;
   y_eq = y_L0 + deltaL * SCALE;
 
@@ -79,7 +79,7 @@ function updateFmax(){
 
   let k = +kEl.value;
 
-  let Amax = 140 / SCALE;   // max πλάτος
+  let Amax = 140 / SCALE;
   let Fmax = k * Amax;
 
   FEl.max = Math.round(Fmax);
@@ -122,7 +122,7 @@ function draw(){
   kv.textContent  = k + " N/m";
   Fv.textContent  = Math.round(F) + " N";
 
-  // ✅ σωστή ενημέρωση panel
+  // ✅ PANEL
   let Fcrit = (m1 + m2) * g;
   FvalBox.textContent  = F.toFixed(1);
   FcritBox.textContent = Fcrit.toFixed(1);
@@ -145,7 +145,7 @@ function draw(){
   drawScene(y1, y2, k);
 
   if(forcesEl.checked){
-    drawForces(y1, y2, k);
+    drawForces(y1, y2);
   }
 }
 
@@ -154,34 +154,35 @@ function draw(){
 function drawScene(y1,y2,k){
 
   let cx = width/2;
-  let groundY = height-100;
+  let groundY = height - 100;
 
   // έδαφος
-  line(0,groundY+20,width,groundY+20);
+  stroke(0);
+  line(0, groundY+20, width, groundY+20);
 
   // Θ.Ι.
   stroke(0,150,0);
-  line(cx-50,y_eq,cx+50,y_eq);
+  line(cx-50, y_eq, cx+50, y_eq);
 
-  // φυσικό μήκος
+  // ΦΥΣΙΚΟ ΜΗΚΟΣ (κόκκινη)
   stroke(200,0,0);
   drawingContext.setLineDash([5,5]);
-  line(cx-50,y_L0,cx+50,y_L0);
+  line(cx-50, y_L0, cx+50, y_L0);
   drawingContext.setLineDash([]);
 
-  // Α
+  // ΠΛΑΤΟΣ
   let F = +FEl.value;
   let Apx = (F/k)*SCALE;
 
   stroke(0,0,200);
   drawingContext.setLineDash([6,6]);
-  line(cx-60,y_eq-Apx,cx+60,y_eq-Apx);
-  line(cx-60,y_eq+Apx,cx+60,y_eq+Apx);
+  line(cx-60, y_eq-Apx, cx+60, y_eq-Apx);
+  line(cx-60, y_eq+Apx, cx+60, y_eq+Apx);
   drawingContext.setLineDash([]);
 
   // ελατήριο
   let r1=30, r2=35;
-  drawSpring(cx,y1+r1,y2-r2);
+  drawSpring(cx, y1+r1, y2-r2);
 
   // σώματα
   fill(180);
@@ -225,24 +226,20 @@ function drawArrow(x,y,dy,col){
 
 // --------------------------------
 
-function drawForces(y1,y2,k){
+function drawForces(y1,y2){
 
   let cx = width/2;
 
-  // ✅ ΣΩΣΤΟΣ ΥΠΟΛΟΓΙΣΜΟΣ ΠΑΡΑΜΟΡΦΩΣΗΣ
-  let L =-(y2 - 35) + (y1 + 30);
-  let deltaL = (L / SCALE) - L0;
-
-  // ✅ ΣΩΣΤΟ ΠΡΟΣΗΜΟ
-  let sign = -Math.sign(deltaL);
+  // ✅ ΤΟ ΣΩΣΤΟ ΚΡΙΤΗΡΙΟ (ΤΕΛΟΣ ΣΕ ΟΛΑ ΤΑ ΛΑΘΗ)
+  let sign = (y1 < y_L0) ? -1 : 1;
 
   // βάρη
   drawArrow(cx,y1,40,color(0,0,255));
   drawArrow(cx,y2,40,color(0,0,255));
 
-  // ✅ ΔΙΟΡΘΩΜΕΝΟ ΕΛΑΤΗΡΙΟ
-  drawArrow(cx-20,y1, -40*sign, color(0,150,0));
-  drawArrow(cx-20,y2,  40*sign, color(0,150,0));
+  // ✅ ΕΛΑΤΗΡΙΟ (ΑΛΛΑΖΕΙ ΟΤΑΝ ΠΕΡΝΑ ΤΗΝ ΚΟΚΚΙΝΗ)
+  drawArrow(cx-20,y1, -40*sign, color(0,150,0)); // Σ1
+  drawArrow(cx-20,y2,  40*sign, color(0,150,0)); // Σ2
 
   // F
   if(state==="loading"){
