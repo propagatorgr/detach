@@ -51,11 +51,14 @@ function initSystem(){
   let m1 = +m1El.value;
   let k = +kEl.value;
 
-  let groundY = height - 100;
+ let groundY = height - 100;
 
-  // ✅ Σ2 ακουμπά στο έδαφος σωστά
-  let r2 = 35; // radius
-  y2 = groundY - r2;
+// ακτίνα Σ2 = 70 / 2
+let r2 = 70 / 2;
+
+// ✅ απόλυτα σωστή επαφή
+y2 = (groundY + 20) - r2;
+
 
   let deltaL = (m1 * g) / k;
 
