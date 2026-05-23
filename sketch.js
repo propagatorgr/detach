@@ -6,7 +6,6 @@ let y1, v1;
 let y2;
 
 let y_eq;
-let y_target;
 
 let dt = 0.02;
 
@@ -34,8 +33,8 @@ function initSystem(){
   let groundY = height - 100;
   y2 = groundY;
 
-  // ✅ ΙΣΟΡΡΟΠΙΑ ΜΟΝΟ m1
-  let deltaL = (m1*g)/k;
+  // ισορροπία μόνο m1
+  let deltaL = (m1 * g) / k;
   let L_eq = L0 + deltaL;
 
   y_eq = y2 - L_eq;
@@ -54,7 +53,7 @@ function startSim(){
 }
 
 function resetSim(){
-  FEl.value = 0;   // ✅ reset δύναμης
+  FEl.value = 0;
   initSystem();
 }
 
@@ -71,39 +70,32 @@ function draw(){
 
   updateLabels(m1,m2,k,F);
 
-  let A = F/k;
-  y_target = y_eq + A;
-
-  // -------- LOADING --------
+  // --------------------------------
+  // LOADING = ΑΚΡΙΒΗΣ ΘΕΣΗ
+  // --------------------------------
   if(state==="loading"){
-
-    let speed = 5;
-
-    if (Math.abs(y_target - y1) > speed){
-      y1 += speed * Math.sign(y_target - y1);
-    } else {
-      y1 = y_target;
-    }
+    y1 = y_eq + (F / k);
   }
 
-  // -------- ΤΑΛΑΝΤΩΣΗ --------
+  // --------------------------------
+  // ΤΑΛΑΝΤΩΣΗ
+  // --------------------------------
   if(state==="oscillation"){
 
-    let x = y1 - y_eq;
-    let a1 = - (k/m1) * x;
+    let x = y1 - y_eq;          // απομάκρυνση
+    let a = -(k/m1) * x;        // ΑΑΤ
 
-    v1 += a1 * dt;
-    y1 += v1 * dt;
+    v1 += a*dt;
+    y1 += v1*dt;
   }
 
   // δύναμη ελατηρίου
   let L = y2 - y1;
-  let Fel = k*(L - L0);
+  let Fel = k * (L - L0);
 
-  let lift = (Fel >= m2*g);
+  let lift = (F >= (m1 + m2) * g);
 
   drawScene(y1,y2,lift,y_eq);
-
   if(forcesEl.checked){
     drawForces(y1,y2,F,state,lift);
   }
@@ -116,10 +108,9 @@ function drawScene(y1,y2,lift,y_eq){
   let cx = width/2;
   let groundY = height - 100;
 
-  stroke(0);
   line(0,groundY+30,width,groundY+30);
 
-  // γραμμή ισορροπίας
+  // ισορροπία
   stroke(0,150,0);
   line(cx-40,y_eq,cx+40,y_eq);
 
@@ -150,8 +141,8 @@ function drawSpring(x,y1,y2){
   let coils=14;
   let step=(y2-y1)/coils;
 
-  stroke(0);
   noFill();
+  stroke(0);
 
   beginShape();
   for(let i=0;i<=coils;i++){
@@ -168,7 +159,7 @@ function drawArrow(x,y,dy,label){
   stroke(255,0,0);
   line(x,y,x,y+dy);
 
-  let s = dy>0 ? 1 : -1;
+  let s = dy>0?1:-1;
 
   line(x,y+dy,x-6,y+dy-6*s);
   line(x,y+dy,x+6,y+dy-6*s);
@@ -203,10 +194,10 @@ function drawForces(y1,y2,F,state,lift){
 // --------------------------------
 
 function updateLabels(m1,m2,k,F){
-  m1v.textContent=m1+" kg";
-  m2v.textContent=m2+" kg";
-  kv.textContent=k+" N/m";
-  Fv.textContent=F+" N";
+  m1v.textContent = m1+" kg";
+  m2v.textContent = m2+" kg";
+  kv.textContent = k+" N/m";
+  Fv.textContent = F+" N";
 }
 
 // --------------------------------
