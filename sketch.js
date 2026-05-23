@@ -67,7 +67,10 @@ function initSystem(){
 
 function startSim(){ state="oscillation"; v1=0; }
 function togglePause(){ paused=!paused; }
-function resetSim(){ initSystem(); }
+function resetSim(){
+  FEl.value = 0;
+  initSystem();
+}
 
 // --------------------------------
 
