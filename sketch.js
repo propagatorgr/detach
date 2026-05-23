@@ -1,20 +1,19 @@
 let g = 10;
 
 // καταστάσεις
-let state = "loading"; // loading → release → oscillation
+let state = "loading"; // loading → oscillation
 
 let y1, v1;
 let y2;
 
-let y_eq;      // θέση ισορροπίας
-let y_target;  // θέση A = F/k
+let y_eq;      // ισορροπία (κέντρο-κέντρο)
+let y_target;  // θέση μετά την F
 
 let dt = 0.02;
+let substeps = 8;
 
-// γεωμετρία
-let blockH1 = 60;
-let blockH2 = 70;
-let L0 = 140;
+// φυσικό μήκος (κέντρο→κέντρο)
+let L0 = 200;
 
 // --------------------------------
 
@@ -32,15 +31,15 @@ function windowResized() {
 
 function initSystem() {
 
-  let groundY = height - 80;
-
   let m1 = +m1El.value;
   let m2 = +m2El.value;
   let k = +kEl.value;
 
+  let groundY = height - 100;
+
   y2 = groundY;
 
-  // Θέση ισορροπίας (μόνο βάρη)
+  // ΙΣΟΡΡΟΠΙΑ: kΔL = (m1+m2)g
   let deltaL = (m1 + m2) * g / k;
   let L_eq = L0 + deltaL;
 
@@ -56,7 +55,7 @@ function initSystem() {
 
 function startSim() {
   state = "oscillation";
-  v1 = 0; // αφήνεται από ηρεμία
+  v1 = 0;
 }
 
 function resetSim() {
@@ -76,82 +75,74 @@ function draw() {
 
   updateLabels(m1, m2, k, F);
 
-  let groundY = height - 80;
-
-  // στόχος: A = F/k
+  // -------- στόχος: A = F/k --------
   let A = F / k;
   y_target = y_eq + A;
 
-  // -------------------------------
+  // --------------------------------
   // 1. LOADING (με F)
-  // -------------------------------
+  // --------------------------------
   if (state === "loading") {
-
-    // ομαλή μετάβαση
-    y1 += (y_target - y1) * 0.1;
+    y1 += (y_target - y1) * 0.15;
   }
 
-  // -------------------------------
+  // --------------------------------
   // 2. ΤΑΛΑΝΤΩΣΗ (χωρίς F)
-  // -------------------------------
+  // --------------------------------
   if (state === "oscillation") {
 
-    for (let i = 0; i < 6; i++) {
+    for (let i = 0; i < substeps; i++) {
 
-      let small_dt = dt / 6;
+      let dt_s = dt / substeps;
 
-      let topOfS2 = y2 - blockH2 / 2;
-      let bottomOfS1 = y1 + blockH1 / 2;
-
-      let L = topOfS2 - bottomOfS1;
+      let L = y2 - y1;              // ΚΕΝΤΡΟ-ΚΕΝΤΡΟ
       let Fel = -k * (L - L0);
 
       let a1 = (m1 * g + Fel) / m1;
 
-      v1 += a1 * small_dt;
-      y1 += v1 * small_dt;
+      v1 += a1 * dt_s;
+      y1 += v1 * dt_s;
     }
   }
 
   // --------------------------------
-  // ΑΠΟΚΟΛΛΗΣΗ (λογικό flag)
+  // αποκόλληση (σύμφωνα με το μοντέλο σου)
   // --------------------------------
   let lift = (F >= (m1 + m2) * g);
 
-  drawScene(y1, y2, groundY, lift);
+  drawScene(y1, y2, lift);
 
   if (forcesEl.checked) {
-    drawForces(y1, y2, m1, m2, F, lift);
+    drawForces(y1, y2, state, lift);
   }
 }
 
 // --------------------------------
 
-function drawScene(y1, y2, groundY, lift) {
+function drawScene(y1, y2, lift) {
 
   let cx = width / 2;
+  let groundY = height - 100;
 
-  // έδαφος
   stroke(0);
   line(0, groundY + 30, width, groundY + 30);
 
   // ελατήριο
-  drawSpring(cx, y1 + blockH1 / 2, y2 - blockH2 / 2);
+  drawSpring(cx, y1, y2);
 
   // σώματα
   fill(180);
-  rect(cx - 30, y1 - blockH1 / 2, 60, blockH1);
+  ellipse(cx, y1, 60);
 
   fill(200);
-  rect(cx - 35, y2 - blockH2 / 2, 70, blockH2);
+  ellipse(cx, y2, 70);
 
   fill(0);
   noStroke();
   textAlign(CENTER);
-  text("Σ1", cx, y1 - 40);
-  text("Σ2", cx, y2 - 45);
+  text("Σ1", cx, y1 - 35);
+  text("Σ2", cx, y2 - 40);
 
-  // ένδειξη αποκόλλησης
   if (lift) {
     fill(255, 0, 0);
     text("Αποκόλληση", cx, 30);
@@ -170,7 +161,7 @@ function drawSpring(x, yTop, yBottom) {
 
   beginShape();
   for (let i = 0; i <= coils; i++) {
-    let dx = (i % 2 === 0) ? -12 : 12;
+    let dx = (i % 2 === 0) ? -10 : 10;
     vertex(x + dx, yTop + i * step);
   }
   endShape();
@@ -178,47 +169,46 @@ function drawSpring(x, yTop, yBottom) {
 
 // --------------------------------
 
-function drawArrow(x, y, dx, dy, label) {
+function drawArrow(x, y, dy, label) {
 
   stroke(255, 0, 0);
   strokeWeight(2);
 
-  line(x, y, x + dx, y + dy);
+  line(x, y, x, y + dy);
 
-  let angle = atan2(dy, dx);
+  let sign = Math.sign(dy);
   let size = 8;
 
   push();
-  translate(x + dx, y + dy);
-  rotate(angle);
-  line(0, 0, -size, -size / 2);
-  line(0, 0, -size, size / 2);
+  translate(x, y + dy);
+  line(0, 0, -size, -sign * size);
+  line(0, 0, size, -sign * size);
   pop();
 
   noStroke();
   fill(255, 0, 0);
-  text(label, x + dx + 5, y + dy);
+  text(label, x + 5, y + dy);
 }
 
 // --------------------------------
 
-function drawForces(y1, y2, m1, m2, F, lift) {
+function drawForces(y1, y2, state, lift) {
 
   let cx = width / 2;
 
   // Σ1
-  drawArrow(cx, y1, 0, 40, "m1g");
+  drawArrow(cx, y1, 40, "m1g");
   if (state === "loading") {
-    drawArrow(cx + 25, y1, 0, 40, "F");
+    drawArrow(cx + 20, y1, 40, "F");
   }
-  drawArrow(cx - 25, y1, 0, -40, "Fελ");
+  drawArrow(cx - 20, y1, -40, "Fελ");
 
   // Σ2
-  drawArrow(cx, y2, 0, 40, "m2g");
-  drawArrow(cx - 25, y2, 0, -40, "Fελ");
+  drawArrow(cx, y2, 40, "m2g");
+  drawArrow(cx - 20, y2, -40, "Fελ");
 
   if (!lift) {
-    drawArrow(cx + 25, y2, 0, -40, "N");
+    drawArrow(cx + 20, y2, -40, "N");
   }
 }
 
