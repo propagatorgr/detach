@@ -38,6 +38,9 @@ function setup(){
   FcritBox = document.getElementById("FcritBox");
   statusBox= document.getElementById("statusBox");
 
+  // ✅ ΣΗΜΑΝΤΙΚΟ: δυναμικό εύρος F
+  kEl.addEventListener("input", updateFmax);
+
   initSystem();
 }
 
@@ -61,13 +64,43 @@ function initSystem(){
 
   state = "loading";
   paused = false;
+
+  updateFmax(); // ✅ συγχρονισμός F
 }
 
 // --------------------------------
 
-function startSim(){ state="oscillation"; v1=0; }
-function togglePause(){ paused=!paused; }
-function resetSim(){ initSystem(); }
+function updateFmax(){
+
+  let k = +kEl.value;
+
+  let Amax_px = 140;
+  let Amax = Amax_px / SCALE;
+
+  let Fmax = k * Amax;
+
+  FEl.max = Math.round(Fmax);
+
+  if(+FEl.value > Fmax){
+    FEl.value = Fmax;
+  }
+}
+
+// --------------------------------
+
+function startSim(){ 
+  state="oscillation"; 
+  v1=0; 
+}
+
+function togglePause(){ 
+  paused=!paused; 
+}
+
+function resetSim(){
+  FEl.value = 0;        // ✅ σωστό reset
+  initSystem();
+}
 
 // --------------------------------
 
@@ -80,19 +113,20 @@ function draw(){
   let k  = +kEl.value;
   let F  = +FEl.value;
 
-  // UI labels
+  // UI
   m1v.textContent = m1+" kg";
   m2v.textContent = m2+" kg";
   kv.textContent  = k+" N/m";
   Fv.textContent  = F+" N";
 
-  // --------- ΚΙΝΗΣΗ ---------
+  // -------- ΚΙΝΗΣΗ --------
 
   if(state==="loading"){
     y1 = y_eq + (F/k)*SCALE;
   }
 
   if(state==="oscillation" && !paused){
+
     let x = (y1 - y_eq)/SCALE;
     let a = -(k/m1)*x;
 
@@ -100,7 +134,7 @@ function draw(){
     y1 += v1*dt*SCALE;
   }
 
-  // --------- ΣΧΕΔΙΑΣΗ ---------
+  // -------- ΣΧΕΔΙΑΣΗ --------
 
   drawScene(y1,y2,F,k);
 
@@ -108,7 +142,7 @@ function draw(){
     drawForces(y1,y2);
   }
 
-  // --------- PANEL ---------
+  // -------- PANEL --------
 
   let Fcrit = (m1 + m2) * g;
 
@@ -116,15 +150,15 @@ function draw(){
   FcritBox.textContent = Fcrit.toFixed(1);
 
   if(state!=="oscillation"){
-    statusBox.textContent = "Πάτα 'Έναρξη'";
+    statusBox.textContent="Πάτα 'Έναρξη'";
     statusBox.style.color="gray";
   }
   else if(F < Fcrit){
-    statusBox.textContent = "Δεν υπάρχει αποκόλληση";
+    statusBox.textContent="Δεν υπάρχει αποκόλληση";
     statusBox.style.color="blue";
   }
   else{
-    statusBox.textContent = "Αποκόλληση";
+    statusBox.textContent="Αποκόλληση";
     statusBox.style.color="red";
   }
 }
@@ -140,32 +174,34 @@ function drawScene(y1,y2,F,k){
   stroke(0);
   line(0,groundY+20,width,groundY+20);
 
-  // ---------- ΙΣΟΡΡΟΠΙΑ ----------
+  // ισορροπία
   stroke(0,150,0);
   line(cx-50,y_eq,cx+50,y_eq);
 
-  // ---------- ΠΛΑΤΟΣ ----------
+  // πλάτος
   let Apx = (F/k)*SCALE;
 
   stroke(0,0,200);
   drawingContext.setLineDash([6,6]);
-  line(cx-60,y_eq - Apx,cx+60,y_eq - Apx);
-  line(cx-60,y_eq + Apx,cx+60,y_eq + Apx);
+
+  line(cx-60,y_eq-Apx,cx+60,y_eq-Apx);
+  line(cx-60,y_eq+Apx,cx+60,y_eq+Apx);
+
   drawingContext.setLineDash([]);
 
-  // ---------- ΕΛΑΤΗΡΙΟ ----------
+  // ελατήριο
   let r1=30;
   let r2=35;
   drawSpring(cx,y1+r1,y2-r2);
 
-  // ---------- ΣΩΜΑΤΑ ----------
+  // σώματα
   fill(180);
   ellipse(cx,y1,60);
 
   fill(200);
   ellipse(cx,y2,70);
 
-  // ---------- LABELS ----------
+  // labels
   fill(0);
   noStroke();
   text("Σ1",cx+40,y1);
@@ -196,6 +232,7 @@ function drawArrow(x,y,dy,col){
   line(x,y,x,y+dy);
 
   let s=Math.sign(dy);
+
   line(x,y+dy,x-6,y+dy-6*s);
   line(x,y+dy,x+6,y+dy-6*s);
 }
@@ -210,19 +247,15 @@ function drawForces(y1,y2){
   drawArrow(cx,y1,40,color(0,0,255));
   drawArrow(cx,y2,40,color(0,0,255));
 
-  // ελατήριο (σωστό!)
+  // ελατήριο
   drawArrow(cx-20,y1,-40,color(0,150,0));
-  drawArrow(cx-20,y2,40,color(0,150,0)); // ✅ αντίθετη φορά
+  drawArrow(cx-20,y2,40,color(0,150,0));
 
   // F
   if(state==="loading"){
     drawArrow(cx+20,y1,40,color(255,150,0));
   }
 
-  // Ν
+  // N
   drawArrow(cx+20,y2,-40,color(150,0,150));
-}
-function resetSim(){
-  FEl.value = 0;   // ✅ μηδενίζει το slider
-  initSystem();    // ✅ επαναφέρει το σύστημα
 }
