@@ -222,3 +222,7 @@ function drawForces(y1,y2){
   // Ν
   drawArrow(cx+20,y2,-40,color(150,0,150));
 }
+function resetSim(){
+  FEl.value = 0;   // ✅ μηδενίζει το slider
+  initSystem();    // ✅ επαναφέρει το σύστημα
+}
