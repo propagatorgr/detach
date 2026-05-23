@@ -1,36 +1,36 @@
-let g = 9.8;
+let g = 10;
+
+// καταστάσεις
+let state = "loading"; // loading → release → oscillation
 
 let y1, v1;
-let y2, v2;
+let y2;
 
-let running = false;
+let y_eq;      // θέση ισορροπίας
+let y_target;  // θέση A = F/k
 
 let dt = 0.02;
-let damping = 0.995;
 
 // γεωμετρία
 let blockH1 = 60;
 let blockH2 = 70;
-let L0 = 160;
+let L0 = 140;
 
 // --------------------------------
 
 function setup() {
   createCanvas(window.innerWidth - 260, window.innerHeight);
-  resetSim();
+  initSystem();
 }
 
 function windowResized() {
   resizeCanvas(window.innerWidth - 260, window.innerHeight);
+  initSystem();
 }
 
 // --------------------------------
 
-function startSim() {
-  running = true;
-}
-
-function resetSim() {
+function initSystem() {
 
   let groundY = height - 80;
 
@@ -39,18 +39,28 @@ function resetSim() {
   let k = +kEl.value;
 
   y2 = groundY;
-  v2 = 0;
 
-  // ΘΕΣΗ ΙΣΟΡΡΟΠΙΑΣ (σημαντικό!)
+  // Θέση ισορροπίας (μόνο βάρη)
   let deltaL = (m1 + m2) * g / k;
-
   let L_eq = L0 + deltaL;
 
-  // ξεκινάμε λίγο πιο πάνω → ταλάντωση
-  y1 = y2 - L_eq - 30;
+  y_eq = y2 - L_eq;
+
+  y1 = y_eq;
   v1 = 0;
 
-  running = false;
+  state = "loading";
+}
+
+// --------------------------------
+
+function startSim() {
+  state = "oscillation";
+  v1 = 0; // αφήνεται από ηρεμία
+}
+
+function resetSim() {
+  initSystem();
 }
 
 // --------------------------------
@@ -68,69 +78,67 @@ function draw() {
 
   let groundY = height - 80;
 
-  // ----------- ΕΛΑΤΗΡΙΟ -----------
+  // στόχος: A = F/k
+  let A = F / k;
+  y_target = y_eq + A;
 
-  let topOfS2 = y2 - blockH2 / 2;
-  let bottomOfS1 = y1 + blockH1 / 2;
+  // -------------------------------
+  // 1. LOADING (με F)
+  // -------------------------------
+  if (state === "loading") {
 
-  let L = topOfS2 - bottomOfS1;
+    // ομαλή μετάβαση
+    y1 += (y_target - y1) * 0.1;
+  }
 
-  // clamp για να μη καταρρεύσει
-  L = constrain(L, 40, height);
+  // -------------------------------
+  // 2. ΤΑΛΑΝΤΩΣΗ (χωρίς F)
+  // -------------------------------
+  if (state === "oscillation") {
 
-  let Fel = -k * (L - L0);
+    for (let i = 0; i < 6; i++) {
 
-  if (running) {
+      let small_dt = dt / 6;
 
-    // --- Σ1 ---
-    let a1 = (F + m1 * g + Fel) / m1;
+      let topOfS2 = y2 - blockH2 / 2;
+      let bottomOfS1 = y1 + blockH1 / 2;
 
-    v1 += a1 * dt;
-    v1 *= damping;
-    y1 += v1 * dt;
+      let L = topOfS2 - bottomOfS1;
+      let Fel = -k * (L - L0);
 
-    // --- Σ2 ---
-    let force2 = -Fel - m2 * g;
+      let a1 = (m1 * g + Fel) / m1;
 
-    if (y2 >= groundY) {
-
-      y2 = groundY;
-      if (v2 > 0) v2 = 0;
-
-      if (force2 > 0) {
-        let a2 = force2 / m2;
-        v2 += a2 * dt;
-        v2 *= damping;
-        y2 += v2 * dt;
-      }
-
-    } else {
-
-      let a2 = force2 / m2;
-      v2 += a2 * dt;
-      v2 *= damping;
-      y2 += v2 * dt;
+      v1 += a1 * small_dt;
+      y1 += v1 * small_dt;
     }
   }
 
-  drawScene(y1, y2, groundY);
+  // --------------------------------
+  // ΑΠΟΚΟΛΛΗΣΗ (λογικό flag)
+  // --------------------------------
+  let lift = (F >= (m1 + m2) * g);
+
+  drawScene(y1, y2, groundY, lift);
 
   if (forcesEl.checked) {
-    drawForces(y1, y2, m1, m2, F, Fel);
+    drawForces(y1, y2, m1, m2, F, lift);
   }
 }
 
 // --------------------------------
 
-function drawScene(y1, y2, groundY) {
+function drawScene(y1, y2, groundY, lift) {
 
   let cx = width / 2;
 
+  // έδαφος
   stroke(0);
   line(0, groundY + 30, width, groundY + 30);
 
+  // ελατήριο
   drawSpring(cx, y1 + blockH1 / 2, y2 - blockH2 / 2);
 
+  // σώματα
   fill(180);
   rect(cx - 30, y1 - blockH1 / 2, 60, blockH1);
 
@@ -142,13 +150,19 @@ function drawScene(y1, y2, groundY) {
   textAlign(CENTER);
   text("Σ1", cx, y1 - 40);
   text("Σ2", cx, y2 - 45);
+
+  // ένδειξη αποκόλλησης
+  if (lift) {
+    fill(255, 0, 0);
+    text("Αποκόλληση", cx, 30);
+  }
 }
 
 // --------------------------------
 
 function drawSpring(x, yTop, yBottom) {
 
-  let coils = 12;
+  let coils = 14;
   let step = (yBottom - yTop) / coils;
 
   stroke(0);
@@ -156,7 +170,7 @@ function drawSpring(x, yTop, yBottom) {
 
   beginShape();
   for (let i = 0; i <= coils; i++) {
-    let dx = (i % 2 === 0) ? -10 : 10;
+    let dx = (i % 2 === 0) ? -12 : 12;
     vertex(x + dx, yTop + i * step);
   }
   endShape();
@@ -188,20 +202,22 @@ function drawArrow(x, y, dx, dy, label) {
 
 // --------------------------------
 
-function drawForces(y1, y2, m1, m2, F, Fel) {
+function drawForces(y1, y2, m1, m2, F, lift) {
 
   let cx = width / 2;
 
   // Σ1
   drawArrow(cx, y1, 0, 40, "m1g");
-  drawArrow(cx + 25, y1, 0, 40, "F");
+  if (state === "loading") {
+    drawArrow(cx + 25, y1, 0, 40, "F");
+  }
   drawArrow(cx - 25, y1, 0, -40, "Fελ");
 
   // Σ2
   drawArrow(cx, y2, 0, 40, "m2g");
   drawArrow(cx - 25, y2, 0, -40, "Fελ");
 
-  if (y2 >= height - 80) {
+  if (!lift) {
     drawArrow(cx + 25, y2, 0, -40, "N");
   }
 }
