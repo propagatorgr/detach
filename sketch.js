@@ -234,7 +234,7 @@ function drawForces(y1,y2,k){
   let deltaL = (L / SCALE) - L0;
 
   // ✅ ΣΩΣΤΟ ΠΡΟΣΗΜΟ
-  let sign = Math.sign(deltaL);
+  let sign = -Math.sign(deltaL);
 
   // βάρη
   drawArrow(cx,y1,40,color(0,0,255));
