@@ -54,7 +54,7 @@ function initSystem(){
 
   // ✅ ΘΕΣΗ ΙΣΟΡΡΟΠΙΑΣ
   let deltaL = (m1*g)/k;
-  y_eq = y_L0 - deltaL*SCALE;
+  y_eq = y_L0 + deltaL*SCALE;
 
   y1 = y_eq;
   v1 = 0;
