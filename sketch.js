@@ -1,6 +1,6 @@
 let g = 10;
 
-let state = "loading";
+let state = "loading"; // loading, oscillation
 
 let y1, v1;
 let y2;
@@ -9,7 +9,11 @@ let y_eq;
 
 let dt = 0.02;
 
-let L0 = 200;
+// scale για να φαίνεται η μετατόπιση
+let SCALE = 120;  
+
+// γεωμετρικό μήκος
+let L0 = 2 * SCALE;  // 2 m οπτικά
 
 // --------------------------------
 
@@ -18,14 +22,14 @@ function setup() {
   initSystem();
 }
 
-function windowResized(){
+function windowResized() {
   resizeCanvas(window.innerWidth - 260, window.innerHeight);
   initSystem();
 }
 
 // --------------------------------
 
-function initSystem(){
+function initSystem() {
 
   let m1 = +m1El.value;
   let k = +kEl.value;
@@ -33,9 +37,9 @@ function initSystem(){
   let groundY = height - 100;
   y2 = groundY;
 
-  // ισορροπία μόνο m1
+  // ισορροπία (μόνο m1)
   let deltaL = (m1 * g) / k;
-  let L_eq = L0 + deltaL;
+  let L_eq = L0 + deltaL * SCALE;
 
   y_eq = y2 - L_eq;
 
@@ -47,19 +51,32 @@ function initSystem(){
 
 // --------------------------------
 
-function startSim(){
-  state = "oscillation";
+function startSim() {
   v1 = 0;
+  state = "oscillation";
 }
 
-function resetSim(){
+function resetSim() {
   FEl.value = 0;
   initSystem();
 }
 
 // --------------------------------
 
-function draw(){
+// 🔴 ΚΡΙΣΙΜΟ: άμεση αντίδραση slider
+FEl.addEventListener("input", () => {
+  if (state === "loading") {
+    let k = +kEl.value;
+    let F = +FEl.value;
+
+    let A = (F / k) * SCALE;
+    y1 = y_eq + A;
+  }
+});
+
+// --------------------------------
+
+function draw() {
 
   background(255);
 
@@ -68,147 +85,151 @@ function draw(){
   let k = +kEl.value;
   let F = +FEl.value;
 
-  updateLabels(m1,m2,k,F);
+  updateLabels(m1, m2, k, F);
 
-  // --------------------------------
-  // LOADING = ΑΚΡΙΒΗΣ ΘΕΣΗ
-  // --------------------------------
-  if(state==="loading"){
-    y1 = y_eq + (F / k);
+  // -------- LOADING --------
+  if (state === "loading") {
+    let A = (F / k) * SCALE;
+    y1 = y_eq + A;
   }
 
-  // --------------------------------
-  // ΤΑΛΑΝΤΩΣΗ
-  // --------------------------------
-  if(state==="oscillation"){
+  // -------- ΤΑΛΑΝΤΩΣΗ --------
+  if (state === "oscillation") {
 
-    let x = y1 - y_eq;          // απομάκρυνση
-    let a = -(k/m1) * x;        // ΑΑΤ
+    let x = y1 - y_eq;             // απομάκρυνση σε pixel
+    let a = -(k / m1) * (x / SCALE) * SCALE;
 
-    v1 += a*dt;
-    y1 += v1*dt;
+    // απλοποιείται σε:
+    // a = -(k/m1)*x
+
+    a = -(k / m1) * x;
+
+    v1 += a * dt;
+    y1 += v1 * dt;
   }
 
-  // δύναμη ελατηρίου
+  // δύναμη ελατηρίου (για ένδειξη αποκόλλησης)
   let L = y2 - y1;
-  let Fel = k * (L - L0);
+  let Fel = (L - L0) / SCALE * k;
 
   let lift = (F >= (m1 + m2) * g);
 
-  drawScene(y1,y2,lift,y_eq);
-  if(forcesEl.checked){
-    drawForces(y1,y2,F,state,lift);
+  drawScene(y1, y2, lift, y_eq);
+
+  if (forcesEl.checked) {
+    drawForces(y1, y2, state, lift);
   }
 }
 
 // --------------------------------
 
-function drawScene(y1,y2,lift,y_eq){
+function drawScene(y1, y2, lift, y_eq) {
 
-  let cx = width/2;
+  let cx = width / 2;
   let groundY = height - 100;
 
-  line(0,groundY+30,width,groundY+30);
+  stroke(0);
+  line(0, groundY + 30, width, groundY + 30);
 
-  // ισορροπία
-  stroke(0,150,0);
-  line(cx-40,y_eq,cx+40,y_eq);
+  // γραμμή ισορροπίας
+  stroke(0, 150, 0);
+  line(cx - 40, y_eq, cx + 40, y_eq);
 
-  drawSpring(cx,y1,y2);
+  drawSpring(cx, y1, y2);
 
   fill(180);
-  ellipse(cx,y1,60);
+  ellipse(cx, y1, 60);
 
   fill(200);
-  ellipse(cx,y2,70);
+  ellipse(cx, y2, 70);
 
   fill(0);
   noStroke();
   textAlign(CENTER);
-  text("Σ1",cx,y1-35);
-  text("Σ2",cx,y2-40);
+  text("Σ1", cx, y1 - 35);
+  text("Σ2", cx, y2 - 40);
 
-  if(lift){
-    fill(255,0,0);
-    text("Αποκόλληση",cx,30);
+  if (lift) {
+    fill(255, 0, 0);
+    text("Αποκόλληση", cx, 30);
   }
 }
 
 // --------------------------------
 
-function drawSpring(x,y1,y2){
+function drawSpring(x, y1, y2) {
 
-  let coils=14;
-  let step=(y2-y1)/coils;
+  let coils = 14;
+  let step = (y2 - y1) / coils;
 
-  noFill();
   stroke(0);
+  noFill();
 
   beginShape();
-  for(let i=0;i<=coils;i++){
-    let dx=(i%2===0)?-10:10;
-    vertex(x+dx,y1+i*step);
+  for (let i = 0; i <= coils; i++) {
+    let dx = (i % 2 === 0) ? -10 : 10;
+    vertex(x + dx, y1 + i * step);
   }
   endShape();
 }
 
 // --------------------------------
 
-function drawArrow(x,y,dy,label){
+function drawArrow(x, y, dy, label) {
 
-  stroke(255,0,0);
-  line(x,y,x,y+dy);
+  stroke(255, 0, 0);
+  line(x, y, x, y + dy);
 
-  let s = dy>0?1:-1;
+  let s = dy > 0 ? 1 : -1;
 
-  line(x,y+dy,x-6,y+dy-6*s);
-  line(x,y+dy,x+6,y+dy-6*s);
+  line(x, y + dy, x - 6, y + dy - 6 * s);
+  line(x, y + dy, x + 6, y + dy - 6 * s);
 
   noStroke();
-  fill(255,0,0);
-  text(label,x+5,y+dy);
+  fill(255, 0, 0);
+  text(label, x + 5, y + dy);
 }
 
 // --------------------------------
 
-function drawForces(y1,y2,F,state,lift){
+function drawForces(y1, y2, state, lift) {
 
-  let cx=width/2;
+  let cx = width / 2;
 
-  drawArrow(cx,y1,40,"m1g");
+  drawArrow(cx, y1, 40, "m1g");
 
-  if(state==="loading"){
-    drawArrow(cx+20,y1,40,"F");
+  if (state === "loading") {
+    drawArrow(cx + 20, y1, 40, "F");
   }
 
-  drawArrow(cx-20,y1,-40,"Fελ");
+  drawArrow(cx - 20, y1, -40, "Fελ");
 
-  drawArrow(cx,y2,40,"m2g");
-  drawArrow(cx-20,y2,-40,"Fελ");
+  drawArrow(cx, y2, 40, "m2g");
+  drawArrow(cx - 20, y2, -40, "Fελ");
 
-  if(!lift){
-    drawArrow(cx+20,y2,-40,"N");
+  if (!lift) {
+    drawArrow(cx + 20, y2, -40, "N");
   }
 }
 
 // --------------------------------
 
-function updateLabels(m1,m2,k,F){
-  m1v.textContent = m1+" kg";
-  m2v.textContent = m2+" kg";
-  kv.textContent = k+" N/m";
-  Fv.textContent = F+" N";
+function updateLabels(m1, m2, k, F) {
+  m1v.textContent = m1 + " kg";
+  m2v.textContent = m2 + " kg";
+  kv.textContent = k + " N/m";
+  Fv.textContent = F + " N";
 }
 
 // --------------------------------
 
-const m1El=document.getElementById("m1");
-const m2El=document.getElementById("m2");
-const kEl=document.getElementById("k");
-const FEl=document.getElementById("F");
-const forcesEl=document.getElementById("forces");
+const m1El = document.getElementById("m1");
+const m2El = document.getElementById("m2");
+const kEl = document.getElementById("k");
+const FEl = document.getElementById("F");
+const forcesEl = document.getElementById("forces");
 
-const m1v=document.getElementById("m1v");
-const m2v=document.getElementById("m2v");
-const kv=document.getElementById("kv");
-const Fv=document.getElementById("Fv");
+const m1v = document.getElementById("m1v");
+const m2v = document.getElementById("m2v");
+const kv = document.getElementById("kv");
+const Fv = document.getElementById("Fv");
