@@ -1,12 +1,12 @@
 let g = 10;
 
-// DOM στοιχεία
+// DOM στοιχεία (θα αρχικοποιηθούν στο setup)
 let m1El, m2El, kEl, FEl;
 let m1v, m2v, kv, Fv;
 let forcesEl;
 
 // κατάσταση
-let state = "loading";
+let state = "loading"; // loading | oscillation
 
 let y1, v1;
 let y2;
@@ -15,8 +15,8 @@ let y_eq;
 
 let dt = 0.016;
 
-let SCALE = 200;  // pixels ανά μέτρο
-let L0 = 1.5;     // m
+let SCALE = 200;   // pixels/m
+let L0 = 1.5;      // m
 
 // --------------------------------
 
@@ -24,7 +24,7 @@ function setup() {
 
   createCanvas(window.innerWidth - 260, window.innerHeight);
 
-  // ✅ ΕΔΩ αρχικοποιούνται τα DOM
+  // ✅ DOM init ΕΔΩ (ΟΧΙ πριν)
   m1El = document.getElementById("m1");
   m2El = document.getElementById("m2");
   kEl = document.getElementById("k");
@@ -54,9 +54,9 @@ function initSystem(){
   let k = +kEl.value;
 
   let groundY = height - 100;
-
   y2 = groundY;
 
+  // ισορροπία
   let deltaL = (m1 * g) / k;
   let L_eq_px = (L0 + deltaL) * SCALE;
 
@@ -95,13 +95,13 @@ function draw(){
 
   let groundY = height - 100;
 
-  // -------- LOADING --------
+  // --- loading ---
   if(state==="loading"){
-    let A = (F/k) * SCALE;
-    y1 = y_eq + A;
+    let Apx = (F/k) * SCALE;
+    y1 = y_eq + Apx;
   }
 
-  // -------- ΤΑΛΑΝΤΩΣΗ --------
+  // --- ταλάντωση ---
   if(state==="oscillation"){
 
     let x = (y1 - y_eq)/SCALE;
@@ -111,10 +111,9 @@ function draw(){
     y1 += v1*dt*SCALE;
   }
 
-  // για ένδειξη αποκόλλησης
   let lift = (F >= (m1 + m2)*g);
 
-  drawScene(y1,y2,groundY,lift,y_eq);
+  drawScene(y1,y2,groundY,lift,y_eq,F,k);
 
   if(forcesEl.checked){
     drawForces(y1,y2,state,lift);
@@ -123,19 +122,37 @@ function draw(){
 
 // --------------------------------
 
-function drawScene(y1,y2,groundY,lift,y_eq){
+function drawScene(y1,y2,groundY,lift,y_eq,F,k){
 
   let cx = width/2;
 
+  // έδαφος
   strokeWeight(2);
   stroke(0);
   line(0,groundY+20,width,groundY+20);
 
+  // γραμμή ισορροπίας
   stroke(0,150,0);
-  line(cx-40,y_eq,cx+40,y_eq);
+  line(cx-50,y_eq,cx+50,y_eq);
 
+  // -------- NEW: ΓΡΑΜΜΕΣ ΠΛΑΤΟΥΣ --------
+  let Apx = (F/k)*SCALE;
+
+  stroke(0,0,200);
+  drawingContext.setLineDash([6,6]);
+
+  // πάνω
+  line(cx-60, y_eq - Apx, cx+60, y_eq - Apx);
+
+  // κάτω
+  line(cx-60, y_eq + Apx, cx+60, y_eq + Apx);
+
+  drawingContext.setLineDash([]);
+
+  // ελατήριο
   drawSpring(cx,y1,y2);
 
+  // σώματα
   fill(180);
   ellipse(cx,y1,60);
 
@@ -150,7 +167,7 @@ function drawScene(y1,y2,groundY,lift,y_eq){
 
   if(lift){
     fill(255,0,0);
-    text("Αποκόλληση",cx,30);
+    text("Αποκόλληση",cx,40);
   }
 }
 
@@ -214,8 +231,8 @@ function drawForces(y1,y2,state,lift){
 // --------------------------------
 
 function updateLabels(m1,m2,k,F){
-  m1v.textContent=m1+" kg";
-  m2v.textContent=m2+" kg";
-  kv.textContent=k+" N/m";
-  Fv.textContent=F+" N";
+  m1v.textContent = m1+" kg";
+  m2v.textContent = m2+" kg";
+  kv.textContent = k+" N/m";
+  Fv.textContent = F+" N";
 }
