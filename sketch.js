@@ -20,6 +20,9 @@ let detached=false;
 
 let prev_v1=0;
 
+// ✅ κρατάμε το F για το πλάτος
+let F0 = 0;
+
 // ----------------------------
 
 function setup(){
@@ -71,6 +74,8 @@ function initSystem(){
 
   state = "loading";
 
+  F0 = 0;
+
   setControlsEnabled(true);
 
   updateFmax();
@@ -97,11 +102,15 @@ function updateFmax(){
 function startSim(){
 
   let F = +FEl.value;
+  let k = +kEl.value;
 
-  // ✅ ΠΡΩΤΑ παίρνει τη θέση λόγω F
-  y1 = y_eq + (F / (+kEl.value)) * SCALE;
+  // ✅ αποθήκευση για πλάτος
+  F0 = F;
 
-  // ✅ ΜΕΤΑ μηδενίζεται
+  // ✅ αρχική απομάκρυνση
+  y1 = y_eq + (F/k)*SCALE;
+
+  // ✅ μηδενισμός δύναμης
   FEl.value = 0;
 
   state = "oscillation";
@@ -177,7 +186,7 @@ function draw(){
     y1+=v1*dt*SCALE;
 
     if(prev_v1 < 0 && v1 >= 0){
-      if(y1 < y_L0 && F > Fcrit){
+      if(y1 < y_L0 && F0 > Fcrit){
         detached = true;
       }
     }
@@ -209,8 +218,8 @@ function drawScene(y1,y2,k){
   line(cx-50,y_L0,cx+50,y_L0);
   drawingContext.setLineDash([]);
 
-  let F = +FEl.value;
-  let Apx=(F/k)*SCALE;
+  // ✅ Χρήση F0 για πλάτος
+  let Apx = (F0/k)*SCALE;
 
   stroke(0,0,200);
   drawingContext.setLineDash([6,6]);
@@ -273,19 +282,15 @@ function drawForces(y1,y2,F){
 
   let sign = (y1 < y_L0) ? -1 : 1;
 
-  // βάρη
   drawArrow(cx,y1,40,color(0,0,255));
   drawArrow(cx,y2,40,color(0,0,255));
 
-  // ελατήριο
   drawArrow(cx-20,y1,-40*sign,color(0,150,0));
   drawArrow(cx-20,y2,40*sign,color(0,150,0));
 
-  // ✅ F ΜΟΝΟ στο loading και αν έχει τιμή
   if(state==="loading" && F > 0){
     drawArrow(cx+20,y1,40,color(255,150,0));
   }
 
-  // κάθετη αντίδραση
   drawArrow(cx+20,y2,-40,color(150,0,150));
 }
