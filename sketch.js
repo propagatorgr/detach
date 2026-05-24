@@ -10,7 +10,7 @@ let y2;
 let y_eq;
 let y_L0;
 
-let SCALE;
+let SCALE = 200;
 let dt = 0.016;
 let L0 = 1.5;
 
@@ -20,12 +20,11 @@ let detached=false;
 
 let prev_v1=0;
 
-// --------------------------------
+// ----------------------------
 
 function setup(){
 
-  let cnv = createCanvas(10,10);
-  cnv.parent("canvas-wrapper");
+  createCanvas(window.innerWidth - 260, window.innerHeight);
 
   m1El = document.getElementById("m1");
   m2El = document.getElementById("m2");
@@ -43,36 +42,17 @@ function setup(){
 
   kEl.addEventListener("input", updateFmax);
 
-  resizeSystem();
   initSystem();
 }
 
-// --------------------------------
-
-function windowResized(){
-  resizeSystem();
-}
-
-// ✅ σωστό responsive scale (bounded)
-function resizeSystem(){
-
-  let w = document.getElementById("canvas-wrapper").offsetWidth;
-  let h = window.innerHeight;
-
-  resizeCanvas(w, h);
-
-  // ✅ clamp scale (ΤΟ ΚΡΙΣΙΜΟ FIX)
-  SCALE = constrain(h/4, 120, 220);
-}
-
-// --------------------------------
+// ----------------------------
 
 function initSystem(){
 
   let m1 = +m1El.value;
   let k  = +kEl.value;
 
-  let groundY = height - 80;
+  let groundY = height - 100;
 
   let r2 = 35;
   y2 = groundY - r2;
@@ -92,14 +72,14 @@ function initSystem(){
   updateFmax();
 }
 
-// --------------------------------
+// ----------------------------
 
 function updateFmax(){
 
   let k = +kEl.value;
 
-  let Amax = 120/SCALE;
-  let Fmax = k*Amax;
+  let Amax = 140 / SCALE;
+  let Fmax = k * Amax;
 
   FEl.max = Math.round(Fmax);
 
@@ -108,12 +88,12 @@ function updateFmax(){
   }
 }
 
-// --------------------------------
+// ----------------------------
 
 function startSim(){
   state="oscillation";
-  v1=0;
-  prev_v1=0;
+  v1 = 0;
+  prev_v1 = 0;
 }
 
 function togglePause(){
@@ -125,7 +105,7 @@ function resetSim(){
   initSystem();
 }
 
-// --------------------------------
+// ----------------------------
 
 function draw(){
 
@@ -157,10 +137,9 @@ function draw(){
     v1+=a*dt;
     y1+=v1*dt*SCALE;
 
-    // ✅ πραγματική κορυφή
-    if(prev_v1<0 && v1>=0){
+    if(prev_v1 < 0 && v1 >= 0){
       if(y1 < y_L0 && F > Fcrit){
-        detached=true;
+        detached = true;
       }
     }
 
@@ -174,39 +153,33 @@ function draw(){
   }
 }
 
-// --------------------------------
+// ----------------------------
 
 function drawScene(y1,y2,k){
 
   let cx = width/2;
-  let r1=30, r2=35;
 
-  strokeWeight(2);
+  stroke(0);
+  line(0,height-100,width,height-100);
 
-  // έδαφος
-  line(0,height-80,width,height-80);
-
-  // ισορροπία
   stroke(0,150,0);
-  line(cx-80,y_eq,cx+80,y_eq);
+  line(cx-50,y_eq,cx+50,y_eq);
 
-  // φυσικό μήκος
   stroke(200,0,0);
-  drawingContext.setLineDash([6,6]);
-  line(cx-80,y_L0,cx+80,y_L0);
+  drawingContext.setLineDash([5,5]);
+  line(cx-50,y_L0,cx+50,y_L0);
   drawingContext.setLineDash([]);
 
-  // πλάτος
   let F = +FEl.value;
   let Apx=(F/k)*SCALE;
 
   stroke(0,0,200);
-  drawingContext.setLineDash([5,5]);
-  line(cx-80,y_eq-Apx,cx+80,y_eq-Apx);
-  line(cx-80,y_eq+Apx,cx+80,y_eq+Apx);
+  drawingContext.setLineDash([6,6]);
+  line(cx-60,y_eq-Apx,cx+60,y_eq-Apx);
+  line(cx-60,y_eq+Apx,cx+60,y_eq+Apx);
   drawingContext.setLineDash([]);
 
-  drawSpring(cx,y1+r1,y2-r2);
+  drawSpring(cx,y1+30,y2-35);
 
   fill(180);
   ellipse(cx,y1,60);
@@ -215,27 +188,24 @@ function drawScene(y1,y2,k){
   ellipse(cx,y2,70);
 
   fill(0);
-  noStroke();
   text("Σ1",cx+40,y1);
   text("Σ2",cx+40,y2);
 
   if(detached){
     fill(255,0,0);
     textAlign(CENTER);
-    textSize(20);
-    text("Αποκόλληση",cx,50);
+    textSize(18);
+    text("Αποκόλληση",cx,40);
   }
 }
 
-// --------------------------------
+// ----------------------------
 
 function drawSpring(x,y1,y2){
 
   let step=(y2-y1)/12;
 
-  stroke(0);
   noFill();
-
   beginShape();
   for(let i=0;i<=12;i++){
     let dx=(i%2)?10:-10;
@@ -244,20 +214,19 @@ function drawSpring(x,y1,y2){
   endShape();
 }
 
-// --------------------------------
+// ----------------------------
 
 function drawArrow(x,y,dy,col){
 
   stroke(col);
   line(x,y,x,y+dy);
 
-  // ✅ arrowhead FIX
   let s = dy>0?1:-1;
   line(x,y+dy,x-6,y+dy-6*s);
   line(x,y+dy,x+6,y+dy-6*s);
 }
 
-// --------------------------------
+// ----------------------------
 
 function drawForces(y1,y2){
 
@@ -269,5 +238,5 @@ function drawForces(y1,y2){
   drawArrow(cx,y2,40,color(0,0,255));
 
   drawArrow(cx-20,y1,-40*sign,color(0,150,0));
-  drawArrow(cx-20,y2, 40*sign,color(0,150,0));
+  drawArrow(cx-20,y2,40*sign,color(0,150,0));
 }
