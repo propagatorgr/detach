@@ -69,7 +69,10 @@ function initSystem(){
   detached = false;
   paused = false;
 
-  state = "loading";   // ✅ ΕΠΑΝΑΦΟΡΑ κατάστασης
+  state = "loading";
+
+  // ✅ ενεργά sliders
+  setControlsEnabled(true);
 
   updateFmax();
 }
@@ -94,12 +97,15 @@ function updateFmax(){
 
 function startSim(){
 
-  state = "oscillation";   // ✅ ΠΑΝΤΑ ξεκινά
-  paused = false;          // ✅ ξεπαγώνει αν είχε παγώσει
-  detached = false;        // ✅ επανεκκίνηση αποκόλλησης
+  state = "oscillation";
+  paused = false;
+  detached = false;
 
   v1 = 0;
   prev_v1 = 0;
+
+  // ✅ κλείδωμα sliders
+  setControlsEnabled(false);
 }
 
 // ----------------------------
@@ -115,8 +121,23 @@ function togglePause(){
 // ----------------------------
 
 function resetSim(){
-  FEl.value = 0;
+
+  FEl.value=0;
   initSystem();
+
+  // ✅ ξεκλείδωμα sliders
+  setControlsEnabled(true);
+}
+
+// ----------------------------
+
+// ✅ ΒΟΗΘΗΤΙΚΗ ΣΥΝΑΡΤΗΣΗ
+function setControlsEnabled(flag){
+
+  m1El.disabled = !flag;
+  m2El.disabled = !flag;
+  kEl.disabled  = !flag;
+  FEl.disabled  = !flag;
 }
 
 // ----------------------------
@@ -248,7 +269,7 @@ function drawForces(y1,y2,F){
 
   let sign = (y1 < y_L0) ? -1 : 1;
 
-  // βάρος
+  // βάρη
   drawArrow(cx,y1,40,color(0,0,255));
   drawArrow(cx,y2,40,color(0,0,255));
 
@@ -256,7 +277,7 @@ function drawForces(y1,y2,F){
   drawArrow(cx-20,y1,-40*sign,color(0,150,0));
   drawArrow(cx-20,y2,40*sign,color(0,150,0));
 
-  // ✅ ΔΥΝΑΜΗ F ΜΟΝΟ ΑΝ F>0
+  // δύναμη F (μόνο αν υπάρχει)
   if(F > 0){
     drawArrow(cx+20,y1,40,color(255,150,0));
   }
