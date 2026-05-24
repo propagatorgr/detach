@@ -69,6 +69,8 @@ function initSystem(){
   detached = false;
   paused = false;
 
+  state = "loading";   // ✅ ΕΠΑΝΑΦΟΡΑ κατάστασης
+
   updateFmax();
 }
 
@@ -91,17 +93,29 @@ function updateFmax(){
 // ----------------------------
 
 function startSim(){
-  state="oscillation";
+
+  state = "oscillation";   // ✅ ΠΑΝΤΑ ξεκινά
+  paused = false;          // ✅ ξεπαγώνει αν είχε παγώσει
+  detached = false;        // ✅ επανεκκίνηση αποκόλλησης
+
   v1 = 0;
   prev_v1 = 0;
 }
 
+// ----------------------------
+
 function togglePause(){
-  paused=!paused;
+
+  paused = !paused;
+
+  let btn = document.querySelector('button[onclick="togglePause()"]');
+  btn.textContent = paused ? "Resume" : "Pause";
 }
 
+// ----------------------------
+
 function resetSim(){
-  FEl.value=0;
+  FEl.value = 0;
   initSystem();
 }
 
@@ -149,7 +163,7 @@ function draw(){
   drawScene(y1,y2,k);
 
   if(forcesEl.checked){
-    drawForces(y1,y2);
+    drawForces(y1,y2,F);
   }
 }
 
@@ -228,7 +242,7 @@ function drawArrow(x,y,dy,col){
 
 // ----------------------------
 
-function drawForces(y1,y2){
+function drawForces(y1,y2,F){
 
   let cx = width/2;
 
@@ -242,24 +256,11 @@ function drawForces(y1,y2){
   drawArrow(cx-20,y1,-40*sign,color(0,150,0));
   drawArrow(cx-20,y2,40*sign,color(0,150,0));
 
-  // δύναμη F στο Σ1
-  if(state==="loading"){
+  // ✅ ΔΥΝΑΜΗ F ΜΟΝΟ ΑΝ F>0
+  if(F > 0){
     drawArrow(cx+20,y1,40,color(255,150,0));
   }
 
-  // κάθετη αντίδραση Ν στο Σ2
+  // κάθετη αντίδραση
   drawArrow(cx+20,y2,-40,color(150,0,150));
-}
-function togglePause(){
-
-  paused = !paused;
-
-  // ✅ αλλάζει το κείμενο του κουμπιού
-  let btn = document.querySelector('button[onclick="togglePause()"]');
-
-  if(paused){
-    btn.textContent = "Resume";
-  } else {
-    btn.textContent = "Pause";
-  }
 }
