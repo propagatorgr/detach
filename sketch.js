@@ -19,8 +19,6 @@ let paused=false;
 let detached=false;
 
 let prev_v1=0;
-
-// ✅ κρατάμε το F για το πλάτος
 let F0 = 0;
 
 // ----------------------------
@@ -44,6 +42,7 @@ function setup(){
   FcritBox = document.getElementById("FcritBox");
 
   kEl.addEventListener("input", updateFmax);
+  m1El.addEventListener("input", updateFmax);
 
   initSystem();
 }
@@ -83,17 +82,36 @@ function initSystem(){
 
 // ----------------------------
 
+// ✅ ΝΕΑ ΕΚΔΟΣΗ – ΦΥΣΙΚΑ ΣΩΣΤΗ
 function updateFmax(){
 
-  let k = +kEl.value;
+  let m1 = +m1El.value;
+  let k  = +kEl.value;
 
-  let Amax = 140 / SCALE;
+  // γεωμετρία
+  let R1 = 30;
+  let R2 = 35;
+
+  // επιμήκυνση στη Θ.Ι.
+  let deltaL = (m1*g)/k;
+
+  // Θ.Ι.
+  let y_eq_local = y_L0 + deltaL*SCALE;
+
+  // μέγιστη επιτρεπτή μετατόπιση προς τα κάτω
+  let Amax_px = (y2 - (R1 + R2)) - y_eq_local;
+
+  // μετατροπή σε μέτρα
+  let Amax = Amax_px / SCALE;
+
+  if(Amax < 0) Amax = 0;
+
   let Fmax = k * Amax;
 
-  FEl.max = Math.round(Fmax);
+  FEl.max = Math.max(0, Math.floor(Fmax));
 
-  if(+FEl.value > Fmax){
-    FEl.value = Fmax;
+  if(+FEl.value > FEl.max){
+    FEl.value = FEl.max;
   }
 }
 
@@ -104,19 +122,10 @@ function startSim(){
   let F = +FEl.value;
   let k = +kEl.value;
 
-  // ✅ ΕΛΕΓΧΟΣ ΠΡΙΝ ΞΕΚΙΝΗΣΕΙ ΟΤΙΔΗΠΟΤΕ
-  if (y_eq + (F/k)*SCALE > y2 - (30 + 35)) {
-    alert("Επιλέξτε άλλη δύναμη ή αλλάξτε το k");
-    return;
-  }
-
-  // ✅ αποθήκευση για πλάτος
   F0 = F;
 
-  // ✅ αρχική απομάκρυνση
   y1 = y_eq + (F/k)*SCALE;
 
-  // ✅ μηδενισμός δύναμης
   FEl.value = 0;
 
   state = "oscillation";
@@ -128,6 +137,7 @@ function startSim(){
 
   setControlsEnabled(false);
 }
+
 // ----------------------------
 
 function togglePause(){
@@ -223,8 +233,7 @@ function drawScene(y1,y2,k){
   line(cx-50,y_L0,cx+50,y_L0);
   drawingContext.setLineDash([]);
 
-  // ✅ Χρήση F0 για πλάτος
-  let Apx = (F0/k)*SCALE;
+  let Apx=(F0/k)*SCALE;
 
   stroke(0,0,200);
   drawingContext.setLineDash([6,6]);
