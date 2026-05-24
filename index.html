@@ -2,7 +2,6 @@
 <html lang="el">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Ελατήριο</title>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.0/p5.min.js"></script>
@@ -10,77 +9,59 @@
 <style>
 body {
   margin: 0;
-  font-family: sans-serif;
-}
-
-.container {
   display: flex;
   height: 100vh;
+  font-family: sans-serif;
 }
 
 #controls {
   width: 260px;
   background: #e9e9e9;
   padding: 10px;
-  box-sizing: border-box;
 }
 
-#canvas-wrapper {
+canvas {
   flex: 1;
-}
-
-/* κινητό */
-@media (max-width: 700px) {
-  .container {
-    flex-direction: column;
-  }
-  #controls {
-    width: 100%;
-  }
 }
 
 button {
   width: 100%;
-  margin-top: 6px;
+  margin-top: 8px;
 }
 </style>
+
 </head>
 
 <body>
 
-<div class="container">
-
 <div id="controls">
-  <h3>Ρυθμίσεις</h3>
 
-  Μάζα Σ1: <span id="m1v"></span><br>
-  <input id="m1" type="range" min="2" max="10" value="4">
+<h3>Ρυθμίσεις</h3>
 
-  Μάζα Σ2: <span id="m2v"></span><br>
-  <input id="m2" type="range" min="2" max="10" value="6">
+Μάζα Σ1: <span id="m1v"></span><br>
+<input id="m1" type="range" min="2" max="10" value="4">
 
-  k: <span id="kv"></span><br>
-  <input id="k" type="range" min="20" max="200" value="80">
+Μάζα Σ2: <span id="m2v"></span><br>
+<input id="m2" type="range" min="2" max="10" value="6">
 
-  F: <span id="Fv"></span><br>
-  <input id="F" type="range" min="0" max="100" value="0">
+k: <span id="kv"></span><br>
+<input id="k" type="range" min="20" max="200" value="80">
 
-  <button onclick="startSim()">Έναρξη</button>
-  <button onclick="resetSim()">Επαναφορά</button>
-  <button onclick="togglePause()">Pause</button>
+F: <span id="Fv"></span><br>
+<input id="F" type="range" min="0" max="100" value="0">
 
-  <br>
-  <label>
-    <input id="forces" type="checkbox" checked>
-    Δυνάμεις
-  </label>
+<button onclick="startSim()">Έναρξη</button>
+<button onclick="resetSim()">Επαναφορά</button>
+<button onclick="togglePause()">Pause</button>
 
-  <br><br>
-  F = <span id="FvalBox"></span><br>
-  Fcrit = <span id="FcritBox"></span>
-</div>
+<label>
+<input id="forces" type="checkbox" checked>
+Δυνάμεις
+</label>
 
-<div id="canvas-wrapper"></div>
+<br><br>
+F = <span id="FvalBox"></span><br>
+Fcrit = <span id="FcritBox"></span>
 
 </div>
 
