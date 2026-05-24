@@ -71,7 +71,6 @@ function initSystem(){
 
   state = "loading";
 
-  // ✅ ενεργά sliders
   setControlsEnabled(true);
 
   updateFmax();
@@ -97,6 +96,14 @@ function updateFmax(){
 
 function startSim(){
 
+  let F = +FEl.value;
+
+  // ✅ ΠΡΩΤΑ παίρνει τη θέση λόγω F
+  y1 = y_eq + (F / (+kEl.value)) * SCALE;
+
+  // ✅ ΜΕΤΑ μηδενίζεται
+  FEl.value = 0;
+
   state = "oscillation";
   paused = false;
   detached = false;
@@ -104,7 +111,6 @@ function startSim(){
   v1 = 0;
   prev_v1 = 0;
 
-  // ✅ κλείδωμα sliders
   setControlsEnabled(false);
 }
 
@@ -122,16 +128,14 @@ function togglePause(){
 
 function resetSim(){
 
-  FEl.value=0;
+  FEl.value = 0;
   initSystem();
 
-  // ✅ ξεκλείδωμα sliders
   setControlsEnabled(true);
 }
 
 // ----------------------------
 
-// ✅ ΒΟΗΘΗΤΙΚΗ ΣΥΝΑΡΤΗΣΗ
 function setControlsEnabled(flag){
 
   m1El.disabled = !flag;
@@ -277,8 +281,8 @@ function drawForces(y1,y2,F){
   drawArrow(cx-20,y1,-40*sign,color(0,150,0));
   drawArrow(cx-20,y2,40*sign,color(0,150,0));
 
-  // δύναμη F (μόνο αν υπάρχει)
-  if(F > 0){
+  // ✅ F ΜΟΝΟ στο loading και αν έχει τιμή
+  if(state==="loading" && F > 0){
     drawArrow(cx+20,y1,40,color(255,150,0));
   }
 
