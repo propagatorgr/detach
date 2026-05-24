@@ -41,8 +41,15 @@ function setup(){
   FvalBox = document.getElementById("FvalBox");
   FcritBox = document.getElementById("FcritBox");
 
-  kEl.addEventListener("input", updateFmax);
-  m1El.addEventListener("input", updateFmax);
+  kEl.addEventListener("input", () => {
+    initSystem();       // ✅ ΠΡΩΤΑ ενημέρωση γεωμετρίας
+    updateFmax();       // ✅ ΜΕΤΑ όριο
+  });
+
+  m1El.addEventListener("input", () => {
+    initSystem();
+    updateFmax();
+  });
 
   initSystem();
 }
@@ -70,47 +77,43 @@ function initSystem(){
   prev_v1 = 0;
   detached = false;
   paused = false;
-
   state = "loading";
 
   F0 = 0;
 
   setControlsEnabled(true);
-
-  updateFmax();
 }
 
 // ----------------------------
 
-// ✅ ΝΕΑ ΕΚΔΟΣΗ – ΦΥΣΙΚΑ ΣΩΣΤΗ
+// ✅ ΣΩΣΤΗ ΤΕΛΙΚΗ ΕΚΔΟΣΗ
 function updateFmax(){
 
   let m1 = +m1El.value;
   let k  = +kEl.value;
 
-  // γεωμετρία
   let R1 = 30;
   let R2 = 35;
 
-  // επιμήκυνση στη Θ.Ι.
   let deltaL = (m1*g)/k;
 
-  // Θ.Ι.
   let y_eq_local = y_L0 + deltaL*SCALE;
 
-  // μέγιστη επιτρεπτή μετατόπιση προς τα κάτω
+  // ✅ σωστό όριο επαφής
   let Amax_px = (y2 - (R1 + R2)) - y_eq_local;
 
-  // μετατροπή σε μέτρα
   let Amax = Amax_px / SCALE;
 
-  if(Amax < 0) Amax = 0;
+  if (Amax < 0) Amax = 0;
 
   let Fmax = k * Amax;
 
-  FEl.max = Math.max(0, Math.floor(Fmax));
+  // ✅ ασφάλεια για NaN/αρνητικά
+  if (!isFinite(Fmax) || Fmax < 0) Fmax = 0;
 
-  if(+FEl.value > FEl.max){
+  FEl.max = Math.floor(Fmax);
+
+  if (+FEl.value > FEl.max){
     FEl.value = FEl.max;
   }
 }
@@ -154,6 +157,7 @@ function resetSim(){
 
   FEl.value = 0;
   initSystem();
+  updateFmax();
 
   setControlsEnabled(true);
 }
