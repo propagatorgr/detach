@@ -18,6 +18,8 @@ let state = "loading";
 let paused = false;
 let detached = false;
 
+let prev_v1 = 0;
+
 // --------------------------------
 
 function setup(){
@@ -65,6 +67,8 @@ function initSystem(){
   y1 = y_eq;
   v1 = 0;
 
+  prev_v1 = 0;
+
   state = "loading";
   paused = false;
   detached = false;
@@ -93,6 +97,7 @@ function updateFmax(){
 function startSim(){
   state = "oscillation";
   v1 = 0;
+  prev_v1 = 0;
 }
 
 function togglePause(){
@@ -140,14 +145,20 @@ function draw(){
     v1 += a * dt;
     y1 += v1 * dt * SCALE;
 
-    // ✅ ΕΛΕΓΧΟΣ ΑΠΟΚΟΛΛΗΣΗΣ (+A πάνω από L0)
-    let A = F / k;
-    let y_top = y_eq - A * SCALE;
+    // ✅ ΕΛΕΓΧΟΣ ΠΡΑΓΜΑΤΙΚΗΣ ΚΟΡΥΦΗΣ (+Α)
+    if(!detached){
 
-    if(!detached && y_top < y_L0){
-      detached = true;
-      paused = true;
+      if(prev_v1 < 0 && v1 >= 0){  // κορυφή (αλλαγή φοράς)
+
+        if(y1 < y_L0 && F > Fcrit){
+
+          detached = true;
+          paused = true;
+        }
+      }
     }
+
+    prev_v1 = v1;
   }
 
   drawScene(y1, y2, k);
@@ -164,11 +175,9 @@ function drawScene(y1,y2,k){
   let cx = width/2;
   let groundY = height - 100;
 
-  // έδαφος
   stroke(0);
   line(0, groundY+20, width, groundY+20);
 
-  // Θ.Ι.
   stroke(0,150,0);
   line(cx-50, y_eq, cx+50, y_eq);
 
@@ -178,7 +187,7 @@ function drawScene(y1,y2,k){
   line(cx-50, y_L0, cx+50, y_L0);
   drawingContext.setLineDash([]);
 
-  // Α
+  // πλάτος
   let F = +FEl.value;
   let Apx = (F/k)*SCALE;
 
@@ -204,7 +213,7 @@ function drawScene(y1,y2,k){
   text("Σ1",cx+40,y1);
   text("Σ2",cx+40,y2);
 
-  // ✅ ΕΝΔΕΙΞΗ ΑΠΟΚΟΛΛΗΣΗΣ
+  // ✅ ένδειξη αποκόλλησης
   if(detached){
     fill(255,0,0);
     textSize(18);
@@ -246,22 +255,17 @@ function drawForces(y1,y2){
 
   let cx = width/2;
 
-  // ✅ ΚΡΙΤΗΡΙΟ ΦΥΣΙΚΟΥ ΜΗΚΟΥΣ
   let sign = (y1 < y_L0) ? -1 : 1;
 
-  // βάρη
   drawArrow(cx,y1,40,color(0,0,255));
   drawArrow(cx,y2,40,color(0,0,255));
 
-  // ελατήριο
   drawArrow(cx-20,y1, -40*sign, color(0,150,0));
   drawArrow(cx-20,y2,  40*sign, color(0,150,0));
 
-  // F
   if(state==="loading"){
     drawArrow(cx+20,y1,40,color(255,150,0));
   }
 
-  // Ν
   drawArrow(cx+20,y2,-40,color(150,0,150));
 }
