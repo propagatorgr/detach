@@ -137,7 +137,7 @@ function draw(){
     y1 = y_eq + (F / k) * SCALE;
   }
 
-  if(state === "oscillation" && !paused){
+ if(state === "oscillation" && !paused && !detached){
 
     let x = (y1 - y_eq) / SCALE;
     let a = -(k / m1) * x;
