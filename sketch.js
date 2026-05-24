@@ -250,3 +250,16 @@ function drawForces(y1,y2){
   // κάθετη αντίδραση Ν στο Σ2
   drawArrow(cx+20,y2,-40,color(150,0,150));
 }
+function togglePause(){
+
+  paused = !paused;
+
+  // ✅ αλλάζει το κείμενο του κουμπιού
+  let btn = document.querySelector('button[onclick="togglePause()"]');
+
+  if(paused){
+    btn.textContent = "Resume";
+  } else {
+    btn.textContent = "Pause";
+  }
+}
