@@ -18,10 +18,20 @@ body {
   width: 260px;
   background: #e9e9e9;
   padding: 10px;
+  box-sizing: border-box;
 }
 
 canvas {
   flex: 1;
+}
+
+.control-block {
+  margin-bottom: 12px;
+}
+
+.control-label {
+  display: block;
+  margin-bottom: 2px;
 }
 
 button {
@@ -38,28 +48,37 @@ button {
 
 <h3>Ρυθμίσεις</h3>
 
-Μάζα Σ1: <span id="m1v"></span><br>
-<input id="m1" type="range" min="2" max="10" value="4">
+<div class="control-block">
+  <div class="control-label">Μάζα Σ1: <span id="m1v"></span></div>
+  <input id="m1" type="range" min="2" max="10" value="4">
+</div>
 
-Μάζα Σ2: <span id="m2v"></span><br>
-<input id="m2" type="range" min="2" max="10" value="6">
+<div class="control-block">
+  <div class="control-label">Μάζα Σ2: <span id="m2v"></span></div>
+  <input id="m2" type="range" min="2" max="10" value="6">
+</div>
 
-k: <span id="kv"></span><br>
-<input id="k" type="range" min="20" max="200" value="80">
+<div class="control-block">
+  <div class="control-label">k: <span id="kv"></span></div>
+  <input id="k" type="range" min="20" max="200" value="80">
+</div>
 
-F: <span id="Fv"></span><br>
-<input id="F" type="range" min="0" max="100" value="0">
+<div class="control-block">
+  <div class="control-label">F: <span id="Fv"></span></div>
+  <input id="F" type="range" min="0" max="100" value="0">
+</div>
 
 <button onclick="startSim()">Έναρξη</button>
 <button onclick="resetSim()">Επαναφορά</button>
 <button onclick="togglePause()">Pause</button>
 
 <label>
-<input id="forces" type="checkbox" checked>
-Δυνάμεις
+  <input id="forces" type="checkbox" checked>
+  Δυνάμεις
 </label>
 
 <br><br>
+
 F = <span id="FvalBox"></span><br>
 Fcrit = <span id="FcritBox"></span>
 
