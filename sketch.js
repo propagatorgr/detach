@@ -104,17 +104,8 @@ function startSim(){
   let F = +FEl.value;
   let k = +kEl.value;
 
-  let A = F / k;
-
-  // ακτίνες (ίδιες με drawScene!)
-  let R1 = 30;
-  let R2 = 35;
-
-  // όριο επαφής
-  let Amax_touch = (R1 + R2) / SCALE;
-
-  // ✅ έλεγχος
-  if(A > Amax_touch){
+  // ✅ ΕΛΕΓΧΟΣ ΠΡΙΝ ΞΕΚΙΝΗΣΕΙ ΟΤΙΔΗΠΟΤΕ
+  if (y_eq + (F/k)*SCALE > y2 - (30 + 35)) {
     alert("Επιλέξτε άλλη δύναμη ή αλλάξτε το k");
     return;
   }
@@ -137,7 +128,6 @@ function startSim(){
 
   setControlsEnabled(false);
 }
-
 // ----------------------------
 
 function togglePause(){
