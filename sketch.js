@@ -100,10 +100,23 @@ function updateFmax(){
 // ----------------------------
 
 function startSim(){
+  let F = +FEl.value;
+let k = +kEl.value;
 
+let A = F / k;
+
+// ακτίνες (ίδιες με drawScene!)
+let R1 = 30;
+let R2 = 35;
+
+// όριο επαφής
+let Amax_touch = (R1 + R2) / SCALE;
   let F = +FEl.value;
   let k = +kEl.value;
-
+if(A > Amax_touch){
+  alert("Επιλέξτε άλλη δύναμη ή αλλάξτε το k");
+  return;
+}
   // ✅ αποθήκευση για πλάτος
   F0 = F;
 
