@@ -41,9 +41,8 @@ function setup(){
   FvalBox = document.getElementById("FvalBox");
   FcritBox = document.getElementById("FcritBox");
 
-  // ✅ ΣΩΣΤΗ ΣΕΙΡΑ ΕΝΗΜΕΡΩΣΗΣ
-  kEl.addEventListener("input", handleParamChange);
   m1El.addEventListener("input", handleParamChange);
+  kEl.addEventListener("input", handleParamChange);
 
   initSystem();
   updateLimits();
@@ -79,8 +78,8 @@ function initSystem(){
   prev_v1 = 0;
   detached = false;
   paused = false;
-
   state = "loading";
+
   F0 = 0;
 
   setControlsEnabled(true);
@@ -88,7 +87,7 @@ function initSystem(){
 
 // ----------------------------
 
-// ✅ ΕΝΙΑΙΑ ΣΥΝΑΡΤΗΣΗ ΠΕΡΙΟΡΙΣΜΩΝ
+// ✅ ΦΥΣΙΚΑ ΣΩΣΤΑ ΟΡΙΑ (k και F)
 function updateLimits(){
 
   let m1 = +m1El.value;
@@ -101,35 +100,47 @@ function updateLimits(){
   let y2_local = groundY - R2;
   let y_L0_local = y2_local - L0*SCALE;
 
-  // ✅ --------- ΟΡΙΟ k ---------
-  let A_geom = (y2_local - (R1 + R2) - y_L0_local) / SCALE;
+  // ----------------------------
+  // ✅ ΟΡΙΟ k (χωρίς επαφή στη Θ.Ι.)
+  // ----------------------------
+
+  let A_geom_px = (y2_local - (R1 + R2)) - y_L0_local;
+  let A_geom = A_geom_px / SCALE;
+
+  if (A_geom <= 0) A_geom = 0.001;
 
   let k_min = (m1 * g) / A_geom;
 
-  if(!isFinite(k_min) || k_min < 1) k_min = 1;
+  if (!isFinite(k_min) || k_min < 1) k_min = 1;
 
-  kEl.min = Math.floor(k_min);
+  k_min = Math.ceil(k_min);
 
-  if(+kEl.value < kEl.min){
-    kEl.value = kEl.min;
+  kEl.min = k_min;
+
+  if (+kEl.value < k_min){
+    kEl.value = k_min;
+    k = k_min;
   }
 
-  // ✅ --------- ΟΡΙΟ F ---------
+  // ----------------------------
+  // ✅ ΟΡΙΟ F (χωρίς επαφή στην ταλάντωση)
+  // ----------------------------
+
   let deltaL = (m1*g)/k;
   let y_eq_local = y_L0_local + deltaL*SCALE;
 
   let Amax_px = (y2_local - (R1 + R2)) - y_eq_local;
   let Amax = Amax_px / SCALE;
 
-  if(Amax < 0) Amax = 0;
+  if (Amax < 0) Amax = 0;
 
   let Fmax = k * Amax;
 
-  if(!isFinite(Fmax) || Fmax < 0) Fmax = 0;
+  if (!isFinite(Fmax) || Fmax < 0) Fmax = 0;
 
   FEl.max = Math.floor(Fmax);
 
-  if(+FEl.value > FEl.max){
+  if (+FEl.value > FEl.max){
     FEl.value = FEl.max;
   }
 }
