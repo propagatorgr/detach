@@ -234,9 +234,19 @@ function drawForces(y1,y2){
 
   let sign = (y1 < y_L0) ? -1 : 1;
 
+  // βάρος
   drawArrow(cx,y1,40,color(0,0,255));
   drawArrow(cx,y2,40,color(0,0,255));
 
+  // ελατήριο
   drawArrow(cx-20,y1,-40*sign,color(0,150,0));
   drawArrow(cx-20,y2,40*sign,color(0,150,0));
+
+  // δύναμη F στο Σ1
+  if(state==="loading"){
+    drawArrow(cx+20,y1,40,color(255,150,0));
+  }
+
+  // κάθετη αντίδραση Ν στο Σ2
+  drawArrow(cx+20,y2,-40,color(150,0,150));
 }
